@@ -1,0 +1,26 @@
+Package: trac
+Title: Tree-based Aggregation of Compositional Data
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Jacob",
+             family = "Bien",
+             role = c("aut", "cre"),
+             email = "jbien@usc.edu"),
+      person(given = "Christian",
+             family = "Mueller",
+             role = "aut"),
+      person(given = "Xiaohan",
+             family = "Yan",
+             role = "aut"))
+Description: Performs tree-based aggregation of compositional data with a particular focus on microbiome data.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    reticulate,
+    Matrix,
+    ggb,
+    igraph,
+    ape
