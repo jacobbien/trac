@@ -10,5 +10,5 @@ classo <- NULL
 }
 
 install_classo <- function(method = "auto", conda = "auto") {
-  reticulate::py_install("classo", method = method, conda = conda)
+  reticulate::py_install("c-lasso", method = method, conda = conda, pip = TRUE)
 }
