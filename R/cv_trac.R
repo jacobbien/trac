@@ -7,8 +7,10 @@
 #' @param Z,y,A same arguments as passed to \code{\link{trac}}
 #' @param folds a partition of \code{1:nrow(X)}.
 #' @param nfolds number of folds for cross-validation
+#' @param summary_function how to combine the errors calculated on each
+#' observation within a fold (e.g. mean or median)
 #' @export
-cv_trac <- function(fit, Z, y, A, folds = NULL, nfolds = 5) {
+cv_trac <- function(fit, Z, y, A, folds = NULL, nfolds = 5, summary_function = stats::median) {
   n <- nrow(Z)
   p <- ncol(Z)
   stopifnot(length(y) == n)
@@ -31,7 +33,7 @@ cv_trac <- function(fit, Z, y, A, folds = NULL, nfolds = 5) {
                               y[-folds[[i]]], A)
       }
       errs[, i] <- apply((predict_trac(fit_folds[[i]],
-                                         Z[folds[[i]], ])[[1]] - y[folds[[i]]])^2, 2, stats::median)
+                                         Z[folds[[i]], ])[[1]] - y[folds[[i]]])^2, 2, summary_function)
     }
     m <- rowMeans(errs)
     se <- apply(errs, 1, stats::sd) / sqrt(nfolds)
