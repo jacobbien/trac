@@ -4,7 +4,15 @@
 \alias{cv_trac}
 \title{Perform cross validation for tuning parameter selection}
 \usage{
-cv_trac(fit, Z, y, A, folds = NULL, nfolds = 5)
+cv_trac(
+  fit,
+  Z,
+  y,
+  A,
+  folds = NULL,
+  nfolds = 5,
+  summary_function = stats::median
+)
 }
 \arguments{
 \item{fit}{output of \code{\link{trac}} function.}
@@ -14,6 +22,9 @@ cv_trac(fit, Z, y, A, folds = NULL, nfolds = 5)
 \item{folds}{a partition of \code{1:nrow(X)}.}
 
 \item{nfolds}{number of folds for cross-validation}
+
+\item{summary_function}{how to combine the errors calculated on each
+observation within a fold (e.g. mean or median)}
 }
 \description{
 This function is to be called after calling \code{\link{trac}}.  It performs
