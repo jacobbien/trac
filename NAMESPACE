@@ -3,5 +3,6 @@
 export(cv_trac)
 export(phylo_to_A)
 export(predict_trac)
+export(refit_trac)
 export(tax_table_to_phylo)
 export(trac)
