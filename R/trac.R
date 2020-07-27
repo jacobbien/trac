@@ -87,6 +87,7 @@ trac <- function(Z, y, A, lamlist = NULL, eps = 1e-3, nlam = 20, flmin = 1e-4, w
     prob$model_selection$CV <- FALSE
     prob$model_selection$LAMfixed <- FALSE
     prob$model_selection$StabSel <- FALSE
+    prob$model_selection$PATHparameters$lamin <- flmin
 
     # solve  it
     prob$solve()
