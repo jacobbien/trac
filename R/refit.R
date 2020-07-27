@@ -9,6 +9,7 @@
 #' @param fit output of trac
 #' @param Z,y,A same arguments as passed to \code{\link{trac}}
 #' @param tol tolerance for deciding whether a gamma value is zero
+#' @export
 refit_trac <- function(fit, Z, y, A, tol = 1e-5) {
   n <- nrow(Z)
   p <- ncol(Z)
