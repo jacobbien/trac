@@ -27,7 +27,7 @@ cv_trac <- function(fit, Z, y, A, folds = NULL, nfolds = 5, summary_function = s
       # train on all but i-th fold (and use settings from fit):
       fit_folds[[i]] <- trac(Z[-folds[[i]], ],
                       y[-folds[[i]]],
-                      A, lamlist = fit[[iw]]$lamlist, w = fit[[iw]]$w)
+                      A, fraclist = fit[[iw]]$fraclist, w = fit[[iw]]$w)
       if (fit[[iw]]$refit) {
         fit_folds[[i]] <- refit_trac(fit_folds[[i]], Z[-folds[[i]], ],
                               y[-folds[[i]]], A)
@@ -40,9 +40,9 @@ cv_trac <- function(fit, Z, y, A, folds = NULL, nfolds = 5, summary_function = s
     ibest <- which.min(m)
     i1se <- min(which(m < m[ibest] + se[ibest]))
     cv[[iw]] <- list(errs = errs, m = m, se = se,
-                     lambda_best = fit[[iw]]$lamlist[ibest], ibest = ibest,
-                     lambda_1se = fit[[iw]]$lamlist[i1se], i1se = i1se,
-                     lamlist = fit[[iw]]$lamlist, w = fit[[iw]]$w,
+                     lambda_best = fit[[iw]]$fraclist[ibest], ibest = ibest,
+                     lambda_1se = fit[[iw]]$fraclist[i1se], i1se = i1se,
+                     fraclist = fit[[iw]]$fraclist, w = fit[[iw]]$w,
                      nonzeros = colSums(abs(fit[[iw]]$gamma) > 1e-5),
                      fit_folds = fit_folds)
   }

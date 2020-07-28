@@ -4,26 +4,30 @@
 #' in Python.  The optimization problem is
 #'
 #' minimize_{beta, beta0, gamma} 1/(2n) || y - beta0 1_n - Z_clr beta ||^2
-#'                                     + lam || W * gamma ||_1
+#'                                     + lamda_max * frac || W * gamma ||_1
 #' subject to beta = A gamma, 1_p^T beta = 0
 #' where W = diag(w) with w_u > 0 for all u
+#'
+#' Observe that the tuning parameter is specified through "frac", the fraction
+#' of lamda_max (which is the smallest value for which gamma is nonzero).
 #'
 #' @param Z n by p matrix containing log(X)
 #' @param y n vector (response)
 #' @param A p by t_size binary matrix giving tree structure (t_size is the total
-#'    number of nodes)
-#' @param lamlist (optional) vector of tuning parameters.  Or a list of length num_w
-#'          of such vectors.
-#' @param nlam number of tuning parameters (ignored if lamlist non-NULL)
-#' @param flmin ratio of smallest to largest tuning parameter (ignored if lamlist
-#'        non-NULL)
-#' @param w vector of positive weights of length t_size (default: all equal to 1). Or
-#'    a list of num_w such vectors.
+#'   number of nodes)
+#' @param fraclist (optional) vector of tuning parameter multipliers.  Or a list
+#'   of length num_w of such vectors. Should be in (0, 1].
+#' @param nlam number of tuning parameters (ignored if fraclist non-NULL)
+#' @param min_frac smallest value of tuning parameter multiplier (ignored if
+#'   fraclist non-NULL)
+#' @param w vector of positive weights of length t_size (default: all equal to
+#'   1). Or a list of num_w such vectors.
 #'
-#' @return a list of length num_w, where each list element corresponds to the solution
-#' for that choice of w.  Note that the lamlist depends on the choice of w.
+#' @return a list of length num_w, where each list element corresponds to the
+#'   solution for that choice of w.  Note that the fraclist depends on the choice
+#'   of w.
 #' @export
-trac <- function(Z, y, A, lamlist = NULL, eps = 1e-3, nlam = 20, flmin = 1e-4, w = NULL) {
+trac <- function(Z, y, A, fraclist = NULL, eps = 1e-3, nlam = 20, min_frac = 1e-4, w = NULL) {
   n <- length(y)
   stopifnot(nrow(Z) == n)
   p <- ncol(Z)
@@ -58,7 +62,14 @@ trac <- function(Z, y, A, lamlist = NULL, eps = 1e-3, nlam = 20, flmin = 1e-4, w
   # Given a solution deltahat, we can get
   #   gammahat = W^-1 deltahat and betahat = A gammahat
 
-  if(!is.null(lamlist)) stopifnot(lamlist >= 0)
+  if(!is.null(fraclist)) {
+    if (num_w == 1 & !is.list(fraclist)) fraclist <- list(fraclist)
+    stopifnot(unlist(fraclist) >= 0 & unlist(fraclist) <= 1)
+  }
+
+  if(is.null(fraclist))
+    fraclist <- lapply(1:num_w,
+                      function(x) exp(seq(0, log(min_frac), length = nlam)))
 
   Zbar <- rowMeans(Z)
   Z_clr <- Z - Zbar
@@ -87,7 +98,7 @@ trac <- function(Z, y, A, lamlist = NULL, eps = 1e-3, nlam = 20, flmin = 1e-4, w
     prob$model_selection$CV <- FALSE
     prob$model_selection$LAMfixed <- FALSE
     prob$model_selection$StabSel <- FALSE
-    prob$model_selection$PATHparameters$lamin <- flmin
+    prob$model_selection$PATHparameters$lambdas <- fraclist[[iw]]
 
     # solve  it
     prob$solve()
@@ -105,29 +116,10 @@ trac <- function(Z, y, A, lamlist = NULL, eps = 1e-3, nlam = 20, flmin = 1e-4, w
     fit[[iw]] <- list(beta0 = beta0,
                       beta = beta,
                       gamma = gamma,
-                      lamlist = lambda_classo / (2 * n),
+                      fraclist = lambda_classo, # / (2 * n),
                       w = w[[iw]],
                       fit_classo = prob,
                       refit = FALSE)
-  }
-  if (!is.null(lamlist)) {
-    # user specified some lambda values of interest.
-    # Here we do linear interpolation to go from the path to the
-    # solutions at specifically the lambda values in lamlist:
-    fit2 <- list()
-    for (iw in seq(num_w)) {
-      fit2[[iw]] <- fit[[iw]]
-      lam_knots <- fit[[iw]]$lamlist
-      lin_interp <- function(b) approx(lam_knots,
-                                       b,
-                                       lamlist,
-                                       rule = 1:2)$y
-      fit2[[iw]]$beta <- t(apply(fit[[iw]]$beta, 1, lin_interp))
-      fit2[[iw]]$gamma <- t(apply(fit[[iw]]$gamma, 1, lin_interp))
-      fit2[[iw]]$beta0 <- lin_interp(fit[[iw]]$beta0)
-      fit2[[iw]]$lamlist <- lamlist
-    }
-    return(fit2)
   }
   fit
 }

@@ -33,15 +33,15 @@ plot_cv_trac_single_w <- function(cvfit_trac_single_w) {
   x <- cvfit_trac_single_w
   graphics::par(mar = c(5, 5, 5, 1))
   yrang = range(c(x$m - x$se, x$m + x$se))
-  graphics::plot(log(x$lamlist), x$m, xlab = "log(lambda)",
+  graphics::plot(log(x$fraclist), x$m, xlab = "log(lambda)",
                  ylab = "Cross-validation Error",
                  type = "n", ylim = c(0,1))
-  graphics::axis(3, at = log(x$lamlist), labels = paste(x$nonzero), srt = 90,
+  graphics::axis(3, at = log(x$fraclist), labels = paste(x$nonzero), srt = 90,
                  adj = 0)
   graphics::mtext("Number of nonzero gamma", 3, 4, cex = 1.2)
-  ggb:::error_bars(log(x$lamlist), x$m - x$se, x$m + x$se, width = 0.01,
+  ggb:::error_bars(log(x$fraclist), x$m - x$se, x$m + x$se, width = 0.01,
                    col = "darkgrey")
-  graphics::points(log(x$lamlist), x$m, col = 2, pch = 19)
+  graphics::points(log(x$fraclist), x$m, col = 2, pch = 19)
   graphics::abline(v = log(x$lambda_best), lty = 3)
   graphics::abline(v = log(x$lambda_1se), lty = 3)
   invisible()

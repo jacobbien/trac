@@ -14,7 +14,7 @@ refit_trac <- function(fit, Z, y, A, tol = 1e-5) {
   n <- nrow(Z)
   p <- ncol(Z)
   t_size <- ncol(A)
-  nlam <- lapply(fit, function(ft) length(ft$lamlist))
+  nlam <- lapply(fit, function(ft) length(ft$fraclist))
 
   for (iw in seq_along(fit)) {
     for (i in seq(nlam[[iw]])) {

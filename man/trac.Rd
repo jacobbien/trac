@@ -4,7 +4,16 @@
 \alias{trac}
 \title{Perform tree-based aggregation}
 \usage{
-trac(Z, y, A, lamlist = NULL, eps = 0.001, nlam = 20, flmin = 1e-04, w = NULL)
+trac(
+  Z,
+  y,
+  A,
+  fraclist = NULL,
+  eps = 0.001,
+  nlam = 20,
+  min_frac = 1e-04,
+  w = NULL
+)
 }
 \arguments{
 \item{Z}{n by p matrix containing log(X)}
@@ -14,20 +23,21 @@ trac(Z, y, A, lamlist = NULL, eps = 0.001, nlam = 20, flmin = 1e-04, w = NULL)
 \item{A}{p by t_size binary matrix giving tree structure (t_size is the total
 number of nodes)}
 
-\item{lamlist}{(optional) vector of tuning parameters.  Or a list of length num_w
-of such vectors.}
+\item{fraclist}{(optional) vector of tuning parameter multipliers.  Or a list
+of length num_w of such vectors. Should be in (0, 1].}
 
-\item{nlam}{number of tuning parameters (ignored if lamlist non-NULL)}
+\item{nlam}{number of tuning parameters (ignored if fraclist non-NULL)}
 
-\item{flmin}{ratio of smallest to largest tuning parameter (ignored if lamlist
-non-NULL)}
+\item{min_frac}{smallest value of tuning parameter multiplier (ignored if
+fraclist non-NULL)}
 
-\item{w}{vector of positive weights of length t_size (default: all equal to 1). Or
-a list of num_w such vectors.}
+\item{w}{vector of positive weights of length t_size (default: all equal to
+1). Or a list of num_w such vectors.}
 }
 \value{
-a list of length num_w, where each list element corresponds to the solution
-for that choice of w.  Note that the lamlist depends on the choice of w.
+a list of length num_w, where each list element corresponds to the
+solution for that choice of w.  Note that the fraclist depends on the choice
+of w.
 }
 \description{
 Solves the weighted aggregation problem using the CLASSO module
@@ -35,7 +45,10 @@ in Python.  The optimization problem is
 }
 \details{
 minimize_{beta, beta0, gamma} 1/(2n) || y - beta0 1_n - Z_clr beta ||^2
-+ lam || W * gamma ||_1
++ lamda_max * frac || W * gamma ||_1
 subject to beta = A gamma, 1_p^T beta = 0
 where W = diag(w) with w_u > 0 for all u
+
+Observe that the tuning parameter is specified through "frac", the fraction
+of lamda_max (which is the smallest value for which gamma is nonzero).
 }
