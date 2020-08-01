@@ -20,8 +20,8 @@ trac(
 
 \item{y}{n vector (response)}
 
-\item{A}{p by t_size binary matrix giving tree structure (t_size is the total
-number of nodes)}
+\item{A}{p by (t_size-1) binary matrix giving tree structure (t_size is the total
+number of nodes and the -1 is because we do not include the root)}
 
 \item{fraclist}{(optional) vector of tuning parameter multipliers.  Or a list
 of length num_w of such vectors. Should be in (0, 1].}
@@ -31,7 +31,7 @@ of length num_w of such vectors. Should be in (0, 1].}
 \item{min_frac}{smallest value of tuning parameter multiplier (ignored if
 fraclist non-NULL)}
 
-\item{w}{vector of positive weights of length t_size (default: all equal to
+\item{w}{vector of positive weights of length t_size - 1 (default: all equal to
 1). Or a list of num_w such vectors.}
 }
 \value{

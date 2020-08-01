@@ -2,7 +2,8 @@
 % Please edit documentation in R/getting_A.R
 \name{phylo_to_A}
 \alias{phylo_to_A}
-\title{Convert from phylo to the A matrix used in trac}
+\title{Convert from phylo to the A matrix used in trac.  Note this is similar to
+the A used in rare, but with the column of all ones (for the root) removed}
 \usage{
 phylo_to_A(phy)
 }
@@ -10,5 +11,6 @@ phylo_to_A(phy)
 \item{phy}{\code{phylo} object from the \code{ape} package}
 }
 \description{
-Convert from phylo to the A matrix used in trac
+Convert from phylo to the A matrix used in trac.  Note this is similar to
+the A used in rare, but with the column of all ones (for the root) removed
 }
