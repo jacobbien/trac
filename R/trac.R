@@ -13,14 +13,14 @@
 #'
 #' @param Z n by p matrix containing log(X)
 #' @param y n vector (response)
-#' @param A p by t_size binary matrix giving tree structure (t_size is the total
-#'   number of nodes)
+#' @param A p by (t_size-1) binary matrix giving tree structure (t_size is the total
+#'   number of nodes and the -1 is because we do not include the root)
 #' @param fraclist (optional) vector of tuning parameter multipliers.  Or a list
 #'   of length num_w of such vectors. Should be in (0, 1].
 #' @param nlam number of tuning parameters (ignored if fraclist non-NULL)
 #' @param min_frac smallest value of tuning parameter multiplier (ignored if
 #'   fraclist non-NULL)
-#' @param w vector of positive weights of length t_size (default: all equal to
+#' @param w vector of positive weights of length t_size - 1 (default: all equal to
 #'   1). Or a list of num_w such vectors.
 #'
 #' @return a list of length num_w, where each list element corresponds to the
@@ -31,12 +31,12 @@ trac <- function(Z, y, A, fraclist = NULL, eps = 1e-3, nlam = 20, min_frac = 1e-
   n <- length(y)
   stopifnot(nrow(Z) == n)
   p <- ncol(Z)
-  t_size <- ncol(A)
-  if (is.null(w)) w <- list(rep(1, t_size))
+  t_size <- ncol(A) + 1
+  if (is.null(w)) w <- list(rep(1, t_size - 1))
   if (is.numeric(w)) w <- list(w)
   if (!is.list(w)) stop("w must be a list.")
-  if (any(lapply(w, length) != t_size))
-    stop("every element of w must be of length t_size.")
+  if (any(lapply(w, length) != t_size - 1))
+    stop("every element of w must be of length (t_size - 1).")
   if (any(unlist(lapply(w, function(ww) any(ww <= 0)))))
     stop("every element of w must be positive.") # for simplicity, for now we require this.
   num_w <- length(w)
@@ -84,7 +84,7 @@ trac <- function(Z, y, A, fraclist = NULL, eps = 1e-3, nlam = 20, min_frac = 1e-
   for (iw in seq(num_w)) {
     # for each w...
     #  C is 1_p^T A W^-1
-    C <- matrix(Matrix::colSums(A %*% diag(1 / w[[iw]])), 1, t_size)
+    C <- matrix(Matrix::colSums(A %*% diag(1 / w[[iw]])), 1, t_size - 1)
     X_classo <- M %*% diag(1 / w[[iw]])
 
     # set up CLASSO problem:

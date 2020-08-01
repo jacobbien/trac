@@ -55,7 +55,8 @@ tax_table_to_phylo <- function (x, data = parent.frame(), collapse = TRUE, ...) 
   phy
 }
 
-#' Convert from phylo to the A matrix used in trac
+#' Convert from phylo to the A matrix used in trac.  Note this is similar to
+#' the A used in rare, but with the column of all ones (for the root) removed
 #' @param phy \code{phylo} object from the \code{ape} package
 #' @export
 phylo_to_A <- function(phy) {
@@ -75,6 +76,6 @@ phylo_to_A <- function(phy) {
   A[, seq(nleaves + 1, num_nodes)] <- A[, rev(seq(nleaves + 1, num_nodes))]
   rownames(A) <- phy$tip.label
   colnames(A) <- c(phy$tip.label, rev(phy$node.label))
-  A
+  A[, -ncol(A)] # remove the root, which is the rightmost column
 }
 

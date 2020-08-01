@@ -13,14 +13,14 @@
 refit_trac <- function(fit, Z, y, A, tol = 1e-5) {
   n <- nrow(Z)
   p <- ncol(Z)
-  t_size <- ncol(A)
+  t_size <- ncol(A) + 1
   nlam <- lapply(fit, function(ft) length(ft$fraclist))
 
   for (iw in seq_along(fit)) {
     for (i in seq(nlam[[iw]])) {
       # let nz be nonzero elements from trac and z be the zero ones:
       z <- which(abs(fit[[iw]]$gamma[, i]) <= tol)
-      if (length(z) == t_size) {
+      if (length(z) == t_size - 1) {
         # all zero
         fit[[iw]]$beta0[i] = fit[[iw]]$beta0[i]
         fit[[iw]]$beta[, i] = fit[[iw]]$beta[, i]
