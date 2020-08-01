@@ -1,4 +1,5 @@
-
+#' Make a plot of the output of cv_trac
+#' @export
 plot_cv_trac <- function(cvfit_trac, iw = NULL, superimpose = TRUE) {
   num_w <- length(cvfit_trac$cv)
   if (is.null(iw)) iw <- 1:num_w
