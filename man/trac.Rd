@@ -20,8 +20,8 @@ trac(
 
 \item{y}{n vector (response)}
 
-\item{A}{p by (t_size-1) binary matrix giving tree structure (t_size is the total
-number of nodes and the -1 is because we do not include the root)}
+\item{A}{p by (t_size-1) binary matrix giving tree structure (t_size is the
+total number of nodes and the -1 is because we do not include the root)}
 
 \item{fraclist}{(optional) vector of tuning parameter multipliers.  Or a list
 of length num_w of such vectors. Should be in (0, 1].}
@@ -31,13 +31,18 @@ of length num_w of such vectors. Should be in (0, 1].}
 \item{min_frac}{smallest value of tuning parameter multiplier (ignored if
 fraclist non-NULL)}
 
-\item{w}{vector of positive weights of length t_size - 1 (default: all equal to
-1). Or a list of num_w such vectors.}
+\item{w}{vector of positive weights of length t_size - 1 (default: all equal
+to 1). Or a list of num_w such vectors.}
 }
 \value{
 a list of length num_w, where each list element corresponds to the
-solution for that choice of w.  Note that the fraclist depends on the choice
-of w.
+solution for that choice of w.  Note that the fraclist depends on the
+choice of w. beta0 is the intercept; beta is the coefficient vector on the
+scale of leaves of the tree; gamma is the coefficient vector on nodes of
+the tree where the features are sums of logs of the leaf-features within
+that node's subtree; alpha is the coefficient vector on nodes of the tree
+where the features are log of the geometric mean of leaf-features within
+that node's subtree.
 }
 \description{
 Solves the weighted aggregation problem using the CLASSO module
