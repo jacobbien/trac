@@ -119,7 +119,7 @@ trac <- function(Z, y, A, fraclist = NULL, eps = 1e-3, nlam = 20, min_frac = 1e-
     lambda_classo <- prob$model_selection$PATHparameters$lambdas
     beta0 <- ybar - crossprod(gamma, v)
     rownames(beta) <- rownames(A)
-    rownames(gamma) <- colnames(A)
+    rownames(gamma) <- rownames(alpha) <- colnames(A)
     fit[[iw]] <- list(beta0 = beta0,
                       beta = beta,
                       gamma = gamma,
