@@ -66,3 +66,20 @@ plot_cv_lrtrac <- function(cvlrfit, iw) {
   abline(v = flam2[[ilam1]][ilam2], col = 2)
   legend("topleft", legend = c(paste0("CV best")), fill = c(2))
 }
+
+#' Plot trac coefficient path
+#' @export
+plot_trac_path <- function(fit, iw = 1, coef = c("alpha", "beta", "gamma")) {
+  coef <- match.arg(coef)
+  fit[[iw]][[coef]] %>%
+    as.matrix() %>%
+    t() %>%
+    tibble::as_tibble() %>%
+    dplyr::mutate(frac = fit[[iw]]$fraclist) %>%
+    tidyr::pivot_longer(cols = -frac) %>%
+    ggplot2::ggplot(aes(x = frac, y = value, group = name, color = name)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_x_log10() +
+    ggplot2::theme(legend.position = "none") +
+    ggplot2::labs(y = coef, x = "Fraction of lambda_max")
+}
