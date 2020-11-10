@@ -8,11 +8,16 @@ trac(
   Z,
   y,
   A,
+  X = NULL,
   fraclist = NULL,
   eps = 0.001,
   nlam = 20,
   min_frac = 1e-04,
-  w = NULL
+  w = NULL,
+  method = "regression",
+  intercept_classif = TRUE,
+  normalized = TRUE,
+  rho_classification = 0
 )
 }
 \arguments{
@@ -22,6 +27,8 @@ trac(
 
 \item{A}{p by (t_size-1) binary matrix giving tree structure (t_size is the
 total number of nodes and the -1 is because we do not include the root)}
+
+\item{X}{n by p' matrix containing metadata}
 
 \item{fraclist}{(optional) vector of tuning parameter multipliers.  Or a list
 of length num_w of such vectors. Should be in (0, 1].}
@@ -33,6 +40,19 @@ fraclist non-NULL)}
 
 \item{w}{vector of positive weights of length t_size - 1 (default: all equal
 to 1). Or a list of num_w such vectors.}
+
+\item{method}{string which estimation method to use should be in
+("regression", "classification", "classification_huber")}
+
+\item{intercept_classif}{boolean indicating if the intercept should be
+included for classification}
+
+\item{normalized}{logical: indicate if metadata should be normalized.
+In this case the calculation for each covariate / feature:
+(X-X_mean) / ||X||_2}
+
+\item{rho_classification}{value for huberized classification loss.
+Default = -0.0}
 }
 \value{
 a list of length num_w, where each list element corresponds to the
@@ -46,11 +66,24 @@ that node's subtree.
 }
 \description{
 Solves the weighted aggregation problem using the CLASSO module
-in Python.  The optimization problem is
+in Python.  The optimization problems are:
 }
 \details{
+Regression:
 minimize_{beta, beta0, gamma} 1/(2n) || y - beta0 1_n - Z_clr beta ||^2
 + lamda_max * frac || W * gamma ||_1
+subject to beta = A gamma, 1_p^T beta = 0
+where W = diag(w) with w_u > 0 for all u
+
+Classification:
+minimize_{beta, beta0, gamma} max(1 - y(beta0 1_n * Z_clr beta), 0)^2 +
+lambda_max * frac || W * gamma ||_1
+subject to beta = A gamma, 1_p^T beta = 0
+where W = diag(w) with w_u > 0 for all u
+
+Classification Huber:
+minimize_{beta, beta0, gamma} l_p(y * (beta0 +Z_clr^T* beta)) +
+lambda_max * frac || W * gamma ||_1
 subject to beta = A gamma, 1_p^T beta = 0
 where W = diag(w) with w_u > 0 for all u
 

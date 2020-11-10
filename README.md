@@ -1,3 +1,7 @@
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.com/viettr/trac.svg?branch=master)](https://travis-ci.com/viettr/trac)
+<!-- badges: end -->
+
 # trac: Tree-based Aggregation of Compositional Data
 
 This R package implements the [describe method here and link to paper].
