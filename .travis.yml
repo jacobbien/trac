@@ -6,4 +6,4 @@ warnings_are_errors: true
 sudo: required
 
 before_install:
-  - pip install c-lasso
+  - pip3 install c-lasso
