@@ -1,18 +1,13 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: R
+python: 3.6
 cache: packages
+dist: bionic
 warnings_are_errors: false
-sudo: false
-
-cache:
-  - packages
-  - pip
-
-addons:
-  apt:
-    packages:
-      - python3-pip
 
 before_install:
-  - pip3 install c-lasso
+#  - pip install --upgrade pip
+  - pip install c-lasso
+
+r_github_packages: jacobbien/ggb
