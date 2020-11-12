@@ -271,16 +271,14 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     prob$solve()
 
     # extract outputs
-    delta <- purrr::map(prob$solution$PATH$BETAS, as.numeric) %>%
-      rlang::set_names(paste0("V", 1:length(prob$solution$PATH$BETAS))) %>%
-      dplyr::bind_cols() %>%
-      as.matrix()
+    delta <- as.matrix(prob$solution$PATH$BETAS)
     if (classification & intercept_classif) {
       # c-lasso can estimate beta0 --> select first column (estimated beta0)
       # delete the first column afterwards
       beta0 <- delta[, 1]
       delta <- delta[, -1]
     }
+    delta <- t(delta)
     # gammahat = W^-1 deltahat and betahat = A gammahat
     gamma <- diag(1 / w[[iw]]) %*% delta
     beta <- A %*% gamma
