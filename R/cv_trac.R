@@ -54,7 +54,8 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
       if (fit[[iw]]$method == "classification") {
         # loss: max(0, 1 - y_hat * y)^2
         r <- 1 - predict_trac(
-          fit_folds[[i]], Z[folds[[i]], ], X[folds[[i]], ])[[1]] * y[folds[[i]]]
+          fit_folds[[i]], Z[folds[[i]], ], X[folds[[i]], ])[[1]] *
+          c(y[folds[[i]]])
         r_max <- r > 0
         r <- (r * r_max)^2
         errs[, i] <- apply(r, 2, summary_function)
@@ -62,7 +63,8 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
       if (fit[[iw]]$method == "classification_huber") {
         rho_classification <- fit[[iw]]$rho_classification
         r <- predict_trac(
-          fit_folds[[i]], Z[folds[[i]], ], X[folds[[i]], ])[[1]]* y[folds[[i]]]
+          fit_folds[[i]], Z[folds[[i]], ], X[folds[[i]], ])[[1]] *
+          c(y[folds[[i]]])
         r_case_3 <- !(r >= 1)
         r_case_2 <- r <= rho_classification
         r_case_1 <- (r > rho_classification) & (r < 1)
