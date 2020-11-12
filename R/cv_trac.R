@@ -27,6 +27,7 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
     errs <- matrix(NA, ncol(fit[[iw]]$beta), nfolds)
     for (i in seq(nfolds)) {
       cat("fold", i, fill = TRUE)
+      if(is.null(fit[[iw]]$method)) fit[[iw]]$method <- "regression"
       # train on all but i-th fold (and use settings from fit):
       fit_folds[[i]] <- trac(Z[-folds[[i]], ],
         y[-folds[[i]]],
@@ -42,7 +43,7 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
           y[-folds[[i]]], A
         )
       }
-      if (fit[[iw]]$method == "regression") {
+      if (fit[[iw]]$method == "regression" | is.null(fit[[iw]]$method)) {
         errs[, i] <- apply(
           (predict_trac(
             fit_folds[[i]],
