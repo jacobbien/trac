@@ -8,6 +8,12 @@
 predict_trac <- function(fit, new_Z, new_X = NULL) {
   # fit: output of wag
   # new_Z: n_new by p matrix
+
+  # add to make make code backwards compatible
+  if(is.null(fit[[1]]$method)) {
+    fit[[1]]$method <- "regression"
+    fit[[1]]$intercept_classif <- TRUE
+  }
   classification <- fit[[1]]$method %in% c("classificiation",
                                            "classification_huber")
   intercept_classif <- fit[[1]]$intercept_classif
