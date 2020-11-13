@@ -14,9 +14,11 @@ predict_trac <- function(fit, new_Z, new_X = NULL) {
     fit[[1]]$method <- "regression"
     fit[[1]]$intercept_classif <- TRUE
   }
+
   classification <- fit[[1]]$method %in% c("classificiation",
                                            "classification_huber")
   intercept_classif <- fit[[1]]$intercept_classif
+
   yhat <- list()
   for (iw in seq_along(fit)) {
     if (!is.null(new_X)) {
@@ -28,6 +30,7 @@ predict_trac <- function(fit, new_Z, new_X = NULL) {
     } else {
       yhat[[iw]] <- t(t(as.matrix(new_Z %*% fit[[iw]]$beta)))
     }
+# ToDo? output class
 #    if (classification) {
 #      yhat[[iw]] <- yhat[[iw]] >= 0
 #      yhat[[iw]] <- yhat[[iw]] * 2 - 1
