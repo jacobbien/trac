@@ -74,10 +74,13 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
         r_case_1 <- (r > rho_classification) & (r < 1)
 
         r <- r_case_3 * r
-        r[r_case_2] <- (1 - rho_classification) *
-          (1 + rho_classification - 2 * r[r_case_2])
-        r[r_case_1] <- (1 - r[r_case_1])^2
-
+        if (sum(r_case_2) > 0) {
+          r[r_case_2] <- (1 - rho_classification) *
+            (1 + rho_classification - 2 * r[r_case_2])
+        }
+        if (sum(r_case_1) > 0) {
+          r[r_case_1] <- (1 - r[r_case_1]) ^ 2
+        }
         errs[, i] <- apply(r, 2, summary_function)
       }
     }

@@ -270,9 +270,12 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
 
     # solve  it
     prob$solve()
-
     # extract outputs
     delta <- as.matrix(prob$solution$PATH$BETAS)
+    if(sum(is.nan(delta)) > 0) {
+      warning("The algorithm did not converge.")
+      delta[is.nan(delta)] <- 0
+    }
     if (classification & intercept_classif) {
       # c-lasso can estimate beta0 --> select first column (estimated beta0)
       # delete the first column afterwards
@@ -284,20 +287,22 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     gamma <- diag(1 / w[[iw]]) %*% delta
     beta <- A %*% gamma
     # rescale betas for numerical values
-    if ((!is.null(X)) & normalized & (n_numeric > 0)) {
+    if ((!is.null(X)) & normalized) {
       # rescale only if ß not 0
-
-      if((p_x == 1) & (n_numeric == 1)) {
-        normalized_zero <- beta[(p + p_x), ] == 0
-        beta[(p + p_x), ] <- beta[(p + p_x), ] * xs + xm
-        beta[(p + p_x), ][normalized_zero] <- 0
-      } else if(p_x != 1) {
-        normalized_zero <- beta[(p+p_x) - ((p_x - 1):0), ][!categorical, ] == 0
-        beta[(p+p_x) - ((p_x - 1):0), ][!categorical, ] <-
-          beta[(p+p_x) - ((p_x - 1):0), ][!categorical, ] * xs + xm
-        beta[(p+p_x) - ((p_x - 1):0), ][!categorical, ][normalized_zero] <- 0
+      if (n_numeric > 0) {
+        if ((p_x == 1) & (n_numeric == 1)) {
+          normalized_zero <- beta[(p + p_x),] == 0
+          beta[(p + p_x),] <- beta[(p + p_x),] * xs + xm
+          beta[(p + p_x),][normalized_zero] <- 0
+        } else if (p_x != 1) {
+          normalized_zero <-
+            beta[(p + p_x) - ((p_x - 1):0),][!categorical,] == 0
+          beta[(p + p_x) - ((p_x - 1):0),][!categorical,] <-
+            beta[(p + p_x) - ((p_x - 1):0),][!categorical,] * xs + xm
+          beta[(p + p_x) - ((p_x - 1):0),][!categorical,][normalized_zero] <-
+            0
+        }
       }
-
     }
     # alphahat = diag(1^T A) %*% gammahat:
     nleaves <- Matrix::colSums(A)
