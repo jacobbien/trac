@@ -14,6 +14,9 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
                     summary_function = stats::median) {
   n <- nrow(Z)
   p <- ncol(Z)
+  if (!is.null(X)) {
+    if (!is.data.frame(X)) X <- data.frame(X)
+  }
   stopifnot(length(y) == n)
   if (is.null(folds)) {
     folds <- ggb:::make_folds(n, nfolds)
@@ -32,7 +35,7 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
       fit_folds[[i]] <- trac(Z[-folds[[i]], ],
         y[-folds[[i]]],
         A,
-        X[-folds[[i]]],
+        X[-folds[[i]], ],
         fraclist = fit[[iw]]$fraclist,
         w = fit[[iw]]$w,
         method = fit[[iw]]$method

@@ -174,22 +174,6 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
                        function(x) exp(seq(0, log(min_frac), length = nlam)))
   }
 
-  if (classification) {
-    yt <- y
-    Zbar <- rowMeans(Z)
-    Z_clr <- Z - Zbar
-    M <- as.matrix(Z_clr %*% A)
-  } else {
-    Zbar <- rowMeans(Z)
-    Z_clr <- Z - Zbar
-    ybar <- mean(y)
-    yt <- y - ybar
-
-    Z_clrA <- as.matrix(Z_clr %*% A)
-    v <- Matrix::colMeans(Z_clrA)
-    M <- Matrix::t(Matrix::t(Z_clrA) - v)
-  }
-
   if (!is.null(X)) {
     if (normalized) {
       classes_x <- sapply(X, class)
@@ -228,7 +212,24 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
         X[, !categorical] <- t((t(X[, !categorical]) - xm) / xs)
       }
     }
-    M <- cbind(M, X)
+  }
+
+  if (classification) {
+    yt <- y
+    Zbar <- rowMeans(Z)
+    Z_clr <- Z - Zbar
+    if(!is.null(X)) Z_clr <- as.matrix(cbind(Z_clr, X))
+    M <- as.matrix(Z_clr %*% A)
+  } else {
+    Zbar <- rowMeans(Z)
+    Z_clr <- Z - Zbar
+    ybar <- mean(y)
+    yt <- y - ybar
+
+    Z_clrA <- as.matrix(Z_clr %*% A)
+    v <- colMeans(Z_clrA)
+    if(!is.null(X)) Z_clrA <- cbind(Z_clrA, X)
+    M <- t(t(Z_clrA) - v)
   }
 
   fit <- list()
@@ -283,9 +284,20 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     gamma <- diag(1 / w[[iw]]) %*% delta
     beta <- A %*% gamma
     # rescale betas for numerical values
-    if (!is.null(X) & normalized) {
-      beta[length(C) - ((p_x - 1):0)][, !categorical] <-
-        beta[length(C) - ((p_x - 1):0)][, !categorical] * xs + xm
+    if ((!is.null(X)) & normalized & (n_numeric > 0)) {
+      # rescale only if ß not 0
+
+      if((p_x == 1) & (n_numeric == 1)) {
+        normalized_zero <- beta[(p + p_x), ] == 0
+        beta[(p + p_x), ] <- beta[(p + p_x), ] * xs + xm
+        beta[(p + p_x), ][normalized_zero] <- 0
+      } else if(p_x != 1) {
+        normalized_zero <- beta[(p+p_x) - ((p_x - 1):0), ][!categorical, ] == 0
+        beta[(p+p_x) - ((p_x - 1):0), ][!categorical, ] <-
+          beta[(p+p_x) - ((p_x - 1):0), ][!categorical, ] * xs + xm
+        beta[(p+p_x) - ((p_x - 1):0), ][!categorical, ][normalized_zero] <- 0
+      }
+
     }
     # alphahat = diag(1^T A) %*% gammahat:
     nleaves <- Matrix::colSums(A)
@@ -310,4 +322,3 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
   }
   fit
 }
-
