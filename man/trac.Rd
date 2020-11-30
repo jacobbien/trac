@@ -14,10 +14,11 @@ trac(
   nlam = 20,
   min_frac = 1e-04,
   w = NULL,
-  method = "regression",
+  method = c("regression", "classification", "classification_huber"),
   intercept_classif = TRUE,
   normalized = TRUE,
-  rho_classification = 0
+  rho_classification = 0,
+  output = c("raw", "probability")
 )
 }
 \arguments{
