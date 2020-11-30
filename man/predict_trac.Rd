@@ -17,6 +17,9 @@ predict_trac(
 \item{new_Z}{a new data matrix (see \code{Z} from \code{\link{trac}})}
 
 \item{new_X}{a new data matrix (see \code{X} from \code{\link{trac}})}
+
+\item{output}{string  either "raw", "probability" or "class" only relevant
+classification tasks}
 }
 \value{
 a vector of \code{nrow(new_Z) + nrow(new_X)} predictions.

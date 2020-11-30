@@ -54,6 +54,9 @@ In this case the calculation for each covariate / feature:
 
 \item{rho_classification}{value for huberized classification loss.
 Default = -0.0}
+
+\item{output}{logical: indicate if probabilities should be the output
+of classification task, needed for the predict_trac function}
 }
 \value{
 a list of length num_w, where each list element corresponds to the
