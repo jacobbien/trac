@@ -25,9 +25,10 @@ cv_trac(
 \item{nfolds}{number of folds for cross-validation}
 
 \item{summary_function}{how to combine the errors calculated on each
-observation within a fold (e.g. mean or median)}
+observation within a fold (e.g. mean or median) (only for regression task)}
 }
 \description{
 This function is to be called after calling \code{\link{trac}}.  It performs
-\code{nfold}-fold cross validation.
+\code{nfold}-fold cross validation. For classification the metric is
+misclassification error.
 }
