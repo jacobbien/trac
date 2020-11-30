@@ -3,19 +3,22 @@
 #' @param fit output of the function \code{\link{trac}}
 #' @param new_Z a new data matrix (see \code{Z} from \code{\link{trac}})
 #' @param new_X a new data matrix (see \code{X} from \code{\link{trac}})
+#' @param output string  either "raw", "probability" or "class" only relevant
+#'   classification tasks
 #' @return a vector of \code{nrow(new_Z) + nrow(new_X)} predictions.
 #' @export
-predict_trac <- function(fit, new_Z, new_X = NULL) {
+predict_trac <- function(fit, new_Z, new_X = NULL,
+                         output = c("raw", "probability", "class")) {
   # fit: output of wag
   # new_Z: n_new by p matrix
-
   # add to make make code backwards compatible
   if(is.null(fit[[1]]$method)) {
     fit[[1]]$method <- "regression"
     fit[[1]]$intercept_classif <- TRUE
   }
 
-  classification <- fit[[1]]$method %in% c("classificiation",
+  output <- match.arg(output)
+  classification <- fit[[1]]$method %in% c("classification",
                                            "classification_huber")
   intercept_classif <- fit[[1]]$intercept_classif
 
@@ -30,12 +33,35 @@ predict_trac <- function(fit, new_Z, new_X = NULL) {
     } else {
       yhat[[iw]] <- t(t(as.matrix(new_Z %*% fit[[iw]]$beta)))
     }
-# ToDo? output class
-#    if (classification) {
-#      yhat[[iw]] <- yhat[[iw]] >= 0
-#      yhat[[iw]] <- yhat[[iw]] * 2 - 1
-#    }
+    if(classification) {
+      if (output == "class") {
+        yhat[[iw]] <- yhat[[iw]] >= 0
+        yhat[[iw]] <- yhat[[iw]] * 2 - 1
+      }
+      if (output == "probability") {
+        yhat[[iw]] <- probability_transform(yhat = yhat[[iw]],
+                                            A = fit[[iw]]$hyper_prob[1, ],
+                                            B = fit[[iw]]$hyper_prob[2, ])
+
+      }
+    }
+
     rownames(yhat[[iw]]) <- rownames(new_Z)
   }
   return(yhat)
+}
+
+
+probability_transform <- function(yhat, A, B) {
+  # following the idea of Chapter 3.2 of
+  # Lin, H. T., Lin, C. J., & Weng, R. C. (2007). A note on Platt’s
+  # probabilistic outputs for support vector machines.
+  # Machine learning, 68(3), 267-276.
+
+  fApB <- t(A * t(yhat) + B)
+  fApB_index <- fApB >= 0
+  prob <- matrix(nrow = nrow(yhat), ncol = ncol(yhat))
+  prob[fApB_index] <- exp(-fApB[fApB_index]) / (1 + exp(-fApB[fApB_index]))
+  prob[!fApB_index] <- 1 / (1 + exp(fApB[!fApB_index]))
+  prob
 }

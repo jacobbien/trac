@@ -1,14 +1,15 @@
 #' Perform cross validation for tuning parameter selection
 #'
 #' This function is to be called after calling \code{\link{trac}}.  It performs
-#' \code{nfold}-fold cross validation.
+#' \code{nfold}-fold cross validation. For classification the metric is
+#' misclassification error.
 #'
 #' @param fit output of \code{\link{trac}} function.
 #' @param Z,y,A,X same arguments as passed to \code{\link{trac}}
 #' @param folds a partition of \code{1:nrow(X)}.
 #' @param nfolds number of folds for cross-validation
 #' @param summary_function how to combine the errors calculated on each
-#' observation within a fold (e.g. mean or median)
+#' observation within a fold (e.g. mean or median) (only for regression task)
 #' @export
 cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
                     summary_function = stats::median) {
@@ -55,39 +56,19 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
           2, summary_function
         )
       }
-      if (fit[[iw]]$method == "classification") {
+      if (fit[[iw]]$method == "classification" |
+          fit[[iw]]$method == "classification_huber") {
         # loss: max(0, 1 - y_hat * y)^2
-        r <- 1 - predict_trac(
-          fit_folds[[i]], Z[folds[[i]], ], X[folds[[i]], ])[[1]] *
-          c(y[folds[[i]]])
-        r_max <- r > 0
-        r <- (r * r_max)^2
-        errs[, i] <- apply(r, 2, summary_function)
-      }
-      if (fit[[iw]]$method == "classification_huber") {
-        rho_classification <- fit[[iw]]$rho_classification
-        r <- predict_trac(
-          fit_folds[[i]], Z[folds[[i]], ], X[folds[[i]], ])[[1]] *
-          c(y[folds[[i]]])
-        r_case_3 <- !(r >= 1)
-        r_case_2 <- r <= rho_classification
-        r_case_1 <- (r > rho_classification) & (r < 1)
-
-        r <- r_case_3 * r
-        if (sum(r_case_2) > 0) {
-          r[r_case_2] <- (1 - rho_classification) *
-            (1 + rho_classification - 2 * r[r_case_2])
-        }
-        if (sum(r_case_1) > 0) {
-          r[r_case_1] <- (1 - r[r_case_1]) ^ 2
-        }
-        errs[, i] <- apply(r, 2, summary_function)
+        er <- sign(predict_trac(fit_folds[[i]],
+                                Z[folds[[i]],],
+                                X[folds[[i]],])[[1]]) != c(y[folds[[i]]])
+        errs[, i] <- colMeans(er)
       }
     }
     m <- rowMeans(errs)
     se <- apply(errs, 1, stats::sd) / sqrt(nfolds)
     ibest <- which.min(m)
-    i1se <- min(which(m < m[ibest] + se[ibest]))
+    i1se <- min(which(m <= m[ibest] + se[ibest]))
     cv[[iw]] <- list(
       errs = errs, m = m, se = se,
       lambda_best = fit[[iw]]$fraclist[ibest], ibest = ibest,

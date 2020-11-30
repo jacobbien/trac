@@ -4,7 +4,12 @@
 \alias{predict_trac}
 \title{Make predictions based on a trac fit}
 \usage{
-predict_trac(fit, new_Z, new_X = NULL)
+predict_trac(
+  fit,
+  new_Z,
+  new_X = NULL,
+  output = c("raw", "probability", "class")
+)
 }
 \arguments{
 \item{fit}{output of the function \code{\link{trac}}}
