@@ -147,7 +147,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     yt <- y
     Zbar <- rowMeans(Z)
     Z_clr <- Z - Zbar
-    if(!is.null(X)) Z_clr <- as.matrix(cbind(Z_clr, normalized_values$X))
+    if (!is.null(X)) Z_clr <- as.matrix(cbind(Z_clr, normalized_values$X))
     M <- as.matrix(Z_clr %*% A)
   } else {
     Zbar <- rowMeans(Z)
@@ -157,7 +157,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
 
     Z_clrA <- as.matrix(Z_clr %*% A)
     v <- colMeans(Z_clrA)
-    if(!is.null(X)) Z_clrA <- cbind(Z_clrA, X)
+    if (!is.null(X)) Z_clrA <- cbind(Z_clrA, X)
     M <- t(t(Z_clrA) - v)
   }
 
@@ -203,7 +203,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     prob$solve()
     # extract outputs
     delta <- as.matrix(prob$solution$PATH$BETAS)
-    if(sum(is.nan(delta)) > 0) {
+    if (sum(is.nan(delta)) > 0) {
       warning("There is a problem with the estimation,
               try a different method or without interception")
       delta[is.nan(delta)] <- 0
@@ -236,7 +236,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     alpha <- nleaves * gamma
     lambda_classo <- prob$model_selection$PATHparameters$lambdas
     if (!classification) beta0 <- ybar - crossprod(gamma, v)
-    if (!intercept_classif) beta0 = rep(0, times = length(lambda_classo))
+    if (!intercept_classif) beta0 <- rep(0, times = length(lambda_classo))
     rownames(beta) <- rownames(A)
     rownames(gamma) <- rownames(alpha) <- colnames(A)
     if (output == "probability") {
@@ -299,7 +299,7 @@ A_add_X <- function(X, A, t_size, p, p_x) {
   A
 }
 
-check_method <- function(method, y, rho_classification = 0.0){
+check_method <- function(method, y, rho_classification = 0.0) {
   # check the inputs for classification tasks
   supported_methods <- c("regression", "classification", "classification_huber")
   if (!(method %in% supported_methods)) {
@@ -413,14 +413,14 @@ probability_cv <- function(Z, X, A, y, method, w, fraclist, nfolds = 3, eps,
                            w = w,
                            method = method,
                            output = "raw")
-    decision_value <- predict_trac(fit_folds, Z[folds[[i]],],
-                                   X[folds[[i]],])[[1]]
+    decision_value <- predict_trac(fit_folds, Z[folds[[i]], ],
+                                   X[folds[[i]], ])[[1]]
     decision_values <- rbind(decision_values, decision_value)
     label <- c(label, c(y[folds[[i]]]))
   }
   decision_values <- decision_values[-1, ]
   hyper_prob <- matrix(nrow = 2, ncol = n_lambda)
-  for (i in 1:ncol(decision_values)) {
+  for (i in seq_len(ncol(decision_values))) {
     hyper_tmp <- probability_platt(decision_values = decision_values[, i],
                                    label = label, eps = eps)
     hyper_prob[1, i] <- hyper_tmp$A
@@ -447,7 +447,7 @@ probability_platt <- function(decision_values, label, eps) {
   prior1 <- sum(label)
   prior0 <- n_label - prior1
 
-  hi_target <- (prior1 + 1)/(prior1 + 2)
+  hi_target <- (prior1 + 1) / (prior1 + 2)
   lo_target <- 1 / (prior0 + 2)
   t_target <- c()
   t_target[label] <- hi_target
@@ -497,8 +497,8 @@ probability_platt <- function(decision_values, label, eps) {
     }
 
     deter <- h_11 * h_22 - h_21^2
-    d_a <- -(h_22 * g_1 - h_21 * g_2) / deter
-    d_b <- -(-h_21 * g_1 + h_11 * g_2) / deter
+    d_a <- - (h_22 * g_1 - h_21 * g_2) / deter
+    d_b <- - (- h_21 * g_1 + h_11 * g_2) / deter
     gd <- g_1 * d_a + g_2 * d_b
     step_size <- 1
     while (step_size >= min_step) {
@@ -533,5 +533,3 @@ probability_platt <- function(decision_values, label, eps) {
   list(A = A,
        B = B)
 }
-
-
