@@ -22,9 +22,30 @@ jobs:
       - uses: r-lib/actions/setup-r@v1
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "rcmdcheck"))
+          install.packages(c("remotes", "rcmdcheck", "devtools"))
+          devtools::install_github("jacobbien/ggb")
           remotes::install_deps(dependencies = TRUE)
+          remotes::install_cran("lintr")
+          remotes::install_cran("covr")
+#          remotes::install_github("rstudio/reticulate")
         shell: Rscript {0}
+
+      - name: Setup python
+        run: |
+          reticulate::install_miniconda()
+          reticulate::conda_create("r-reticulate", packages = c("python==3.9.0"))
+          reticulate::conda_install(packages = "c-lasso", pip = TRUE)
+          reticulate::use_condaenv("r-reticulate")
+        shell: Rscript {0}
+
       - name: Check
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
+#
+#       - name: Lint
+#         run: lintr::lint_package()
+#         shell: Rscript {0}
+#
+#       - name: Test coverage
+#         run: covr::codecov()
+#         shell: Rscript {0}
