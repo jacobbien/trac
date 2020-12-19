@@ -1,5 +1,5 @@
 <!-- badges: start -->
-[![Travis build status](https://travis-ci.org/viettr/trac.svg?branch=master)](https://travis-ci.org/viettr/trac)
+[![R build status](https://github.com/viettr/trac/workflows/R-CMD-check/badge.svg)](https://github.com/viettr/trac/actions)
 <!-- badges: end -->
 
 # trac: Tree-based Aggregation of Compositional Data

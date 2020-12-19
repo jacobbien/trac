@@ -24,3 +24,5 @@ Imports:
     ggb,
     igraph,
     ape
+Suggests: 
+    testthat
