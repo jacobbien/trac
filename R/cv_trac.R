@@ -5,7 +5,7 @@
 #'
 #' @param fit output of \code{\link{trac}} function.
 #' @param Z,y,A same arguments as passed to \code{\link{trac}}
-#' @param folds a partition of \code{1:nrow(X)}.
+#' @param folds a partition of \code{1:nrow(Z)}.
 #' @param nfolds number of folds for cross-validation
 #' @param summary_function how to combine the errors calculated on each
 #' observation within a fold (e.g. mean or median)

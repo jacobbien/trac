@@ -19,7 +19,7 @@ cv_trac(
 
 \item{Z, y, A}{same arguments as passed to \code{\link{trac}}}
 
-\item{folds}{a partition of \code{1:nrow(X)}.}
+\item{folds}{a partition of \code{1:nrow(Z)}.}
 
 \item{nfolds}{number of folds for cross-validation}
 
