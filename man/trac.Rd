@@ -4,16 +4,7 @@
 \alias{trac}
 \title{Perform tree-based aggregation}
 \usage{
-trac(
-  Z,
-  y,
-  A,
-  fraclist = NULL,
-  eps = 0.001,
-  nlam = 20,
-  min_frac = 1e-04,
-  w = NULL
-)
+trac(Z, y, A, fraclist = NULL, nlam = 20, min_frac = 1e-04, w = NULL)
 }
 \arguments{
 \item{Z}{n by p matrix containing log(X)}

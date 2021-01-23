@@ -6,6 +6,14 @@
 \usage{
 plot_cv_trac(cvfit_trac, iw = NULL, superimpose = TRUE)
 }
+\arguments{
+\item{cvfit_trac}{an object as returned by \code{\link{cv_trac}}.}
+
+\item{iw}{vector of indices specifying which weight sequence solutions to
+include}
+
+\item{superimpose}{whether to superimpose}
+}
 \description{
 Make a plot of the output of cv_trac
 }

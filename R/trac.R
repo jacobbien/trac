@@ -32,7 +32,7 @@
 #'   where the features are log of the geometric mean of leaf-features within
 #'   that node's subtree.
 #' @export
-trac <- function(Z, y, A, fraclist = NULL, eps = 1e-3, nlam = 20, min_frac = 1e-4, w = NULL) {
+trac <- function(Z, y, A, fraclist = NULL, nlam = 20, min_frac = 1e-4, w = NULL) {
   n <- length(y)
   stopifnot(nrow(Z) == n)
   p <- ncol(Z)
@@ -76,14 +76,14 @@ trac <- function(Z, y, A, fraclist = NULL, eps = 1e-3, nlam = 20, min_frac = 1e-
     fraclist <- lapply(1:num_w,
                       function(x) exp(seq(0, log(min_frac), length = nlam)))
 
-  Zbar <- rowMeans(Z)
+  Zbar <- Matrix::rowMeans(Z)
   Z_clr <- Z - Zbar
   ybar <- mean(y)
   yt <- y - ybar
 
   Z_clrA <- as.matrix(Z_clr %*% A)
-  v <- colMeans(Z_clrA)
-  M <- t(t(Z_clrA) - v)
+  v <- Matrix::colMeans(Z_clrA)
+  M <- Matrix::t(Matrix::t(Z_clrA) - v)
 
   fit <- list()
   for (iw in seq(num_w)) {
@@ -109,7 +109,7 @@ trac <- function(Z, y, A, fraclist = NULL, eps = 1e-3, nlam = 20, min_frac = 1e-
     prob$solve()
 
     # extract outputs
-    delta <- as.matrix(map_dfc(prob$solution$PATH$BETAS, as.numeric))
+    delta <- as.matrix(purrr::map_dfc(prob$solution$PATH$BETAS, as.numeric))
     # gammahat = W^-1 deltahat and betahat = A gammahat
     gamma <- diag(1 / w[[iw]]) %*% delta
     beta <- A %*% gamma
