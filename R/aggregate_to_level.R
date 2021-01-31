@@ -29,7 +29,7 @@ aggregate_to_level <- function(x, y, A, tax, level = 7, collapse = FALSE) {
   A_agg <- phylo_to_A(tree1)
   taxa_of_otus <- rownames(A) %>%
     stringr::str_split("::") %>%
-    purrr::map_chr(~ paste(.x[1:(level-1)], collapse = "::"))
+    purrr::map_chr(~ paste(.x[1:level], collapse = "::"))
   unique_taxa <- unique(taxa_of_otus)
   otu_to_taxa <- Matrix::sparseMatrix(i = 1:length(taxa_of_otus),
                               j = match(taxa_of_otus, unique_taxa))
