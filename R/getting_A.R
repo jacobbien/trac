@@ -8,6 +8,8 @@
 #' @export
 tax_table_to_phylo <- function (x, data = parent.frame(), collapse = TRUE, ...) {
   err <- "Formula must be of the kind ~A1/A2/.../An."
+  if (any(lapply(data, class) != "factor"))
+    stop("Every column of data must be a factor.")
   if (length(x) != 2)
     stop(err)
   if (x[[1]] != "~")
