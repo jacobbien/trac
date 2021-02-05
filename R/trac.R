@@ -276,7 +276,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
 }
 
 
-A_add_X <- function(X, A, t_size, p, p_x) {
+A_add_X <- function(X, A, p, p_x) {
   # add the covariates from X to tree, the variables should not be rooted to
   # the same tree as the compositional data
   # create A as:
@@ -284,21 +284,27 @@ A_add_X <- function(X, A, t_size, p, p_x) {
   # (0     1)
   # where 1 is the diagonal matrix with the metadata's covariates dimensions
   # X is the dataframe with the additional covariates and A is the tree
-  # for the compositional data, t_size is the size of the tree
-  # return: new A
-
-  A_rows <- matrix(data = rep(0, time = p_x * (t_size - 1)), nrow = p_x)
-  A_rows <- Matrix::Matrix(A_rows, sparse = TRUE)
-  rownames(A_rows) <- colnames(X)
-  # add names for later
-  A <- rbind(A, A_rows)
-  A_column <- matrix(data = rep(0, time = p_x * p), ncol = p_x)
-  A_column <- Matrix::Matrix(A_column, sparse = TRUE)
+  # for the compositional data
+  # return: updated A
   A_diagonal <- Matrix::Diagonal(p_x, x = 1)
-  A_column <- rbind(A_column, A_diagonal)
-  A <- cbind(A, A_column)
+  A_rownames <- rownames(A)
+  X_rownames <- colnames(X)
+  A <- Matrix::bdiag(A, A_diagonal)
+  # add rownames
+  if(!is.null(A_rownames)) {
+    if(!is.null(X_rownames)) {
+      rownames(A) <- c(A_rownames, X_rownames)
+    } else {
+      rownames(A) <- c(A_rownames, rep("", times = p_x))
+    }
+  } else {
+    if(!is.null(X_rownames)) {
+      rownames(A) <- c(rep("", times = p), X_rownames)
+    }
+  }
   A
 }
+
 
 check_method <- function(method, y, rho_classification = 0.0) {
   # check the inputs for classification tasks
