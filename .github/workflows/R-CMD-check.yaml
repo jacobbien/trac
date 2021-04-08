@@ -34,7 +34,7 @@ jobs:
         run: |
           reticulate::install_miniconda()
           reticulate::conda_create("r-reticulate", packages = c("python==3.9.0"))
-          reticulate::conda_install(packages = "c-lasso", pip = TRUE)
+          reticulate::conda_install(packages = c("c-lasso", "matplotlib", "scipy", "pandas"), pip = TRUE, envname = "r-reticulate")
           reticulate::use_condaenv("r-reticulate")
         shell: Rscript {0}
 
