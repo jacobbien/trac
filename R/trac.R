@@ -29,7 +29,7 @@
 #' @param y n vector (response)
 #' @param A p by (t_size-1) binary matrix giving tree structure (t_size is the
 #'   total number of nodes and the -1 is because we do not include the root)
-#' @param X n by p' matrix containing metadata
+#' @param X n by p' matrix containing additional covariates
 #' @param fraclist (optional) vector of tuning parameter multipliers.  Or a list
 #'   of length num_w of such vectors. Should be in (0, 1].
 #' @param nlam number of tuning parameters (ignored if fraclist non-NULL)
@@ -38,16 +38,19 @@
 #' @param w vector of positive weights of length t_size - 1 (default: all equal
 #'   to 1). Or a list of num_w such vectors.
 #' @param method string which estimation method to use should be in
-#'   ("regression", "classification", "classification_huber")
-#' @param intercept_classif boolean indicating if the intercept should be
-#'   included for classification
-#' @param normalized logical: indicate if metadata should be normalized.
+#'   ("regr", "classif", "classif_huber")
+#' @param intercept only works for classification! Should the intercept be
+#'   fitted. Default is TRUE, set to FALSE if the intercept should not be
+#'   included
+#' @param normalized if `TRUE` normalize the additional covariates.
 #'   In this case the calculation for each covariate / feature:
 #'   (X-X_mean) / ||X||_2
-#' @param rho_classification value for huberized classification loss.
-#'   Default = -0.0
-#' @param output logical: indicate if probabilities should be the output
-#'   of classification task, needed for the predict_trac function
+#'   The weights will be transformed back to the original scale.
+#' @param rho value for huberized classification loss.
+#'   Default = -0.0.
+#' @param output only relevant for classification. String indicating whether
+#'   the raw score output or probability for class 1 should be used.
+#'   The probability is estimated with Platt’s probibalistic output
 #'
 #' @return a list of length num_w, where each list element corresponds to the
 #'   solution for that choice of w.  Note that the fraclist depends on the
@@ -58,13 +61,13 @@
 #'   where the features are log of the geometric mean of leaf-features within
 #'   that node's subtree.
 #' @export
-trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
+trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
                  min_frac = 1e-4, w = NULL,
-                 method = c("regression", "classification",
-                            "classification_huber"),
-                 intercept_classif = TRUE, normalized = TRUE,
-                 rho_classification = 0.0,
+                 method = c("regr", "classif", "classif_huber"),
+                 intercept = TRUE, normalized = TRUE,
+                 rho = 0.0,
                  output = c("raw", "probability")) {
+
   n <- length(y)
   stopifnot(nrow(Z) == n)
   p <- ncol(Z)
@@ -85,7 +88,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
       ))
     }
     p_x <- ncol(X)
-    A <- A_add_X(X = X, A = A, t_size = t_size, p = p, p_x = p_x)
+    A <- A_add_X(X = X, A = A, p = p, p_x = p_x)
     t_size <- ncol(A) + 1
   }
 
@@ -102,7 +105,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
   num_w <- length(w)
   # define supported methods .. maybe add partial matching?
   method_check <- check_method(method = method, y = y,
-                               rho_classification = rho_classification)
+                               rho = rho)
   classification <- method_check$classification
   y <- method_check$y
 
@@ -139,30 +142,44 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
   if (!is.null(X)) {
     if (normalized) {
       normalized_values <-
-        normalization_x(X = X, p_x = p_x, intercept_classif = intercept_classif)
+        normalization_x(X = X, p_x = p_x, intercept = intercept)
+      X <- normalized_values$X
+    } else {
+      categorical_list <- get_categorical_variables(X)
+      categorical <- categorical_list[["categorical"]]
+      n_categorical <- categorical_list[["n_categorical"]]
+      if (n_categorical > 0) {
+        X[, categorical] <- sapply(X[, categorical], as.numeric)
+        X[, categorical] <- sapply(X[, categorical], function(x) x - 1)
+      }
     }
   }
-
   if (classification) {
     yt <- y
-    Zbar <- rowMeans(Z)
+    Zbar <- Matrix::rowMeans(Z)
     Z_clr <- Z - Zbar
-    if (!is.null(X)) Z_clr <- as.matrix(cbind(Z_clr, normalized_values$X))
+    if (!is.null(X)) Z_clr <- as.matrix(cbind(Z_clr, X))
     M <- as.matrix(Z_clr %*% A)
   } else {
-    Zbar <- rowMeans(Z)
+    Zbar <- Matrix::rowMeans(Z)
     Z_clr <- Z - Zbar
     ybar <- mean(y)
     yt <- y - ybar
 
+    if (!is.null(X)) Z_clr <- as.matrix(cbind(Z_clr, X))
     Z_clrA <- as.matrix(Z_clr %*% A)
-    v <- colMeans(Z_clrA)
-    if (!is.null(X)) Z_clrA <- cbind(Z_clrA, X)
-    M <- t(t(Z_clrA) - v)
+    v <- Matrix::colMeans(Z_clrA)
+    if (!is.null(X)) {
+      M <- Z_clrA
+      M[, 1:(t_size - 1 - ncol(X))] <-
+        Matrix::t(Matrix::t(Z_clrA[, 1:(t_size - 1 - ncol(X))]) -
+                    v[1:(t_size - 1 - ncol(X))])
+    } else {
+    M <- Matrix::t(Matrix::t(Z_clrA) - v)
+    }
   }
 
-  if (!classification) intercept_classif <- TRUE
-
+  if (!classification) intercept <- TRUE
 
   fit <- list()
   for (iw in seq(num_w)) {
@@ -170,7 +187,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     #  C is 1_p^T A W^-1
     C <- matrix(Matrix::colSums(A %*% diag(1 / w[[iw]])), 1, t_size - 1)
     if (!is.null(X)) {
-      # set C to 0 for not compositional data
+      # set C = 0 for non compositional data
       C[length(C) - ((p_x - 1):0)] <- rep(0, p_x)
     }
     X_classo <- M %*% diag(1 / w[[iw]])
@@ -191,12 +208,12 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     prob$model_selection$LAMfixed <- FALSE
     prob$model_selection$StabSel <- FALSE
     prob$model_selection$PATHparameters$lambdas <- fraclist[[iw]]
-    if (classification & intercept_classif) {
+    if (classification & intercept) {
       prob$formulation$intercept <- TRUE
     }
-    if (method == "classification_huber") {
+    if (method == "classif_huber") {
       prob$formulation$huber <- TRUE
-      prob$formulation$rho_classification <- rho_classification
+      prob$formulation$rho_classification <- rho
     } else {
       prob$formulation$huber <- FALSE
     }
@@ -209,13 +226,14 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
               try a different method or without interception")
       delta[is.nan(delta)] <- 0
     }
-    if (classification & intercept_classif) {
+    if (classification & intercept) {
       # c-lasso can estimate beta0 --> select first column (estimated beta0)
       # delete the first column afterwards
       beta0 <- delta[, 1]
       delta <- delta[, -1]
     }
     delta <- t(delta)
+    # delta <- as.numeric(delta)
     # gammahat = W^-1 deltahat and betahat = A gammahat
     gamma <- diag(1 / w[[iw]]) %*% delta
     beta <- A %*% gamma
@@ -237,12 +255,14 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     alpha <- nleaves * gamma
     lambda_classo <- prob$model_selection$PATHparameters$lambdas
     if (!classification) beta0 <- ybar - crossprod(gamma, v)
-    if (!intercept_classif) beta0 <- rep(0, times = length(lambda_classo))
+    if (!intercept) beta0 <- rep(0, times = length(lambda_classo))
     rownames(beta) <- rownames(A)
     rownames(gamma) <- rownames(alpha) <- colnames(A)
     if (output == "probability") {
+      eps <- 1e-3
+      if (!is.null(A)) A <- A[1:p, 1:(ncol(A) - p_x)]
       hyper_prob <-
-        probability_cv(
+        get_probability_cv(
           Z = Z,
           X = X,
           A = A,
@@ -267,8 +287,8 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
       fit_classo = prob,
       refit = FALSE,
       method = method,
-      intercept_classif = intercept_classif,
-      rho_classification = rho_classification,
+      intercept = intercept,
+      rho = rho,
       hyper_prob = hyper_prob
     )
   }
@@ -291,14 +311,14 @@ A_add_X <- function(X, A, p, p_x) {
   X_rownames <- colnames(X)
   A <- Matrix::bdiag(A, A_diagonal)
   # add rownames
-  if(!is.null(A_rownames)) {
-    if(!is.null(X_rownames)) {
+  if (!is.null(A_rownames)) {
+    if (!is.null(X_rownames)) {
       rownames(A) <- c(A_rownames, X_rownames)
     } else {
       rownames(A) <- c(A_rownames, rep("", times = p_x))
     }
   } else {
-    if(!is.null(X_rownames)) {
+    if (!is.null(X_rownames)) {
       rownames(A) <- c(rep("", times = p), X_rownames)
     }
   }
@@ -306,21 +326,21 @@ A_add_X <- function(X, A, p, p_x) {
 }
 
 
-check_method <- function(method, y, rho_classification = 0.0) {
+check_method <- function(method, y, rho = 0.0) {
   # check the inputs for classification tasks
-  supported_methods <- c("regression", "classification", "classification_huber")
+  supported_methods <- c("regr", "classif", "classif_huber")
   if (!(method %in% supported_methods)) {
     stop(paste("trac currently supports the following methods: ",
                paste(supported_methods, collapse = ", "),
                sep = " "
     ))
   }
-  if (length(unique(y)) == 2 & method == "regression") {
+  if (length(unique(y)) == 2 & method == "regr") {
     warning("this looks like a classification task, check the method argument")
   }
   # create a dummy variable with information about weather it is a
   # classification task or not for later
-  if (method %in% c("classification", "classification_huber")) {
+  if (method %in% c("classif", "classif_huber")) {
     classification <- TRUE
   } else {
     classification <- FALSE
@@ -334,27 +354,35 @@ check_method <- function(method, y, rho_classification = 0.0) {
       "The fitted model is based on a transformation of y to",
       "(-1,1). The first value of y is coded as 1."
     ))
-    y <- y == y[0]
+    y <- y == y[1]
     y <- y * 2 - 1
   }
-  # If not a classification task --> intercept_classification is TRUE for
+  # If not a classification task --> intercept is TRUE for
   # prediction
   # only accept rho for huberized loss smaller 1
-  stopifnot(rho_classification < 1)
+  stopifnot(rho < 1)
   # return classification indicator and transformed y
   list(classification = classification,
        y = y)
 }
 
-normalization_x <- function(X, p_x, intercept_classif) {
-  # normalize metadata. (x-mean(x)) / norm(x)
-  classes_x <- sapply(X, class)
-  factors <- c("factor")
-  categorical <- classes_x %in% factors
+get_categorical_variables <- function(X) {
+  classes_x <- sapply(X, unique)
+  classes_x <- sapply(classes_x, length)
+  categorical <- classes_x %in% 2
   n_categorical <- sum(categorical)
+  list(categorical = categorical,
+       n_categorical = n_categorical)
+}
+
+normalization_x <- function(X, p_x, intercept) {
+  # normalize metadata. (x-mean(x)) / norm(x)
+  categorical_list <- get_categorical_variables(X)
+  categorical <- categorical_list[["categorical"]]
+  n_categorical <- categorical_list[["n_categorical"]]
   n_numeric <- p_x - n_categorical
   if (n_numeric == 1) {
-    if (!intercept_classif) {
+    if (!intercept) {
       xm <- 0
     } else {
       xm <- mean(X[, !categorical])
@@ -363,20 +391,23 @@ normalization_x <- function(X, p_x, intercept_classif) {
     X[, !categorical] <- (X[, !categorical] - xm) / xs
   }
   if (n_numeric > 1) {
-    if (!intercept_classif) {
-      xm <- rep(0, length = nrow(X[, !categorical]))
+    if (!intercept) {
+      xm <- rep(0, length = ncol(X[, !categorical]))
     } else {
       xm <- apply(X[, !categorical], 2, function(x) mean(x))
     }
     xs <- apply(X[, !categorical], 2, function(x) norm(x, type = "2"))
     X[, !categorical] <- t((t(X[, !categorical]) - xm) / xs)
   }
+  if (n_categorical > 0) {
+    X[, categorical] <- sapply(X[, categorical], as.numeric)
+    X[, categorical] <- sapply(X[, categorical], function(x) x - 1)
+  }
   list(categorical = categorical,
        n_numeric = n_numeric,
        xm = xm,
        xs = xs,
-       X = X
-       )
+       X = X)
 }
 
 rescale_betas <- function(beta, p_x, p, n_numeric, categorical, xs, xm) {
@@ -399,7 +430,7 @@ rescale_betas <- function(beta, p_x, p, n_numeric, categorical, xs, xm) {
 }
 
 
-probability_cv <- function(Z, X, A, y, method, w, fraclist, nfolds = 3, eps,
+get_probability_cv <- function(Z, X, A, y, method, w, fraclist, nfolds = 3, eps,
                            n_lambda) {
   # calculate the hyperparameter for platts method. Do three fold cv
   # to obtain the decision values and pass to the platt algorithm for each
@@ -428,8 +459,8 @@ probability_cv <- function(Z, X, A, y, method, w, fraclist, nfolds = 3, eps,
   decision_values <- decision_values[-1, ]
   hyper_prob <- matrix(nrow = 2, ncol = n_lambda)
   for (i in seq_len(ncol(decision_values))) {
-    hyper_tmp <- probability_platt(decision_values = decision_values[, i],
-                                   label = label, eps = eps)
+    hyper_tmp <- get_probability_platt(decision_values = decision_values[, i],
+                                       label = label, eps = eps)
     hyper_prob[1, i] <- hyper_tmp$A
     hyper_prob[2, i] <- hyper_tmp$B
   }
@@ -437,7 +468,7 @@ probability_cv <- function(Z, X, A, y, method, w, fraclist, nfolds = 3, eps,
 }
 
 
-probability_platt <- function(decision_values, label, eps) {
+get_probability_platt <- function(decision_values, label, eps) {
   # This algorithm is based on the pseudo-code of
   # Lin, H. T., Lin, C. J., & Weng, R. C. (2007). A note on Platt’s
   # probabilistic outputs for support vector machines. Machine learning,

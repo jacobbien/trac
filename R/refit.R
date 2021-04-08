@@ -51,6 +51,8 @@ refit_trac <- function(fit, Z, y, A, tol = 1e-5) {
       solution <- sv$v %*% (c(1 / sv$d[-length(sv$d)], 0) * crossprod(sv$u, y))
       fit[[iw]]$gamma[z, i] = 0
       fit[[iw]]$gamma[-z, i] = solution[-1]
+      fit[[iw]]$alpha[, i] <- fit[[iw]]$gamma[, i]
+      fit[[iw]]$alpha[-z, i] <- fit[[iw]]$gamma[-z, i] * v
       fit[[iw]]$beta0[i] = solution[1]
       fit[[iw]]$beta[, i] = A[, -z] %*% fit[[iw]]$gamma[-z, i]
     }
