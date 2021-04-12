@@ -219,7 +219,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     gamma <- diag(1 / w[[iw]]) %*% delta
     beta <- A %*% gamma
     # rescale betas for numerical values
-    if ((!is.null(X)) & normalized) {
+    if ((!is.null(X)) & normalized & normalized_values$n_numeric != 0) {
       # rescale only if beta not 0
       beta <- rescale_betas(
         beta = beta,
@@ -380,6 +380,14 @@ normalization_x <- function(X, p_x, intercept_classif) {
     }
     xs <- apply(X[, !categorical], 2, function(x) norm(x, type = "2"))
     X[, !categorical] <- t((t(X[, !categorical]) - xm) / xs)
+  }
+  if(n_numeric == 0) {
+    xm <- NULL
+    xs <- NULL
+  }
+  if (n_categorical > 0) {
+    X[, categorical] <- sapply(X[, categorical], as.numeric)
+    X[, categorical] <- sapply(X[, categorical], function(x) x - 1)
   }
   list(categorical = categorical,
        n_numeric = n_numeric,
