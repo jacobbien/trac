@@ -219,17 +219,19 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
     gamma <- diag(1 / w[[iw]]) %*% delta
     beta <- A %*% gamma
     # rescale betas for numerical values
-    if ((!is.null(X)) & normalized & normalized_values$n_numeric != 0) {
+    if ((!is.null(X)) & normalized) {
+      if(normalized_values$n_numeric != 0) {
       # rescale only if beta not 0
-      beta <- rescale_betas(
-        beta = beta,
-        p_x = p_x,
-        p = p,
-        n_numeric = normalized_values$n_numeric,
-        categorical = normalized_values$categorical,
-        xs = normalized_values$xs,
-        xm = normalized_values$xm
-      )
+        beta <- rescale_betas(
+          beta = beta,
+          p_x = p_x,
+          p = p,
+          n_numeric = normalized_values$n_numeric,
+          categorical = normalized_values$categorical,
+          xs = normalized_values$xs,
+          xm = normalized_values$xm
+        )
+      }
     }
     # alphahat = diag(1^T A) %*% gammahat:
     nleaves <- Matrix::colSums(A)
@@ -288,14 +290,17 @@ A_add_X <- function(X, A, p, p_x) {
   # return: updated A
   A_diagonal <- Matrix::Diagonal(p_x, x = 1)
   A_rownames <- rownames(A)
+  A_colnames <- colnames(A)
   X_rownames <- colnames(X)
   A <- Matrix::bdiag(A, A_diagonal)
   # add rownames
   if(!is.null(A_rownames)) {
     if(!is.null(X_rownames)) {
       rownames(A) <- c(A_rownames, X_rownames)
+      colnames(A) <- c(A_colnames, X_rownames)
     } else {
       rownames(A) <- c(A_rownames, rep("", times = p_x))
+      colnames(A) <- c(A_colnames, rep("", times = p_x))
     }
   } else {
     if(!is.null(X_rownames)) {
