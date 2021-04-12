@@ -269,6 +269,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, eps = 1e-3, nlam = 20,
       intercept_classif = intercept_classif,
       rho_classification = rho_classification,
       hyper_prob = hyper_prob
+      normalized = normalized
     )
   }
   fit
@@ -343,6 +344,16 @@ check_method <- function(method, y, rho_classification = 0.0) {
   # return classification indicator and transformed y
   list(classification = classification,
        y = y)
+}
+
+
+get_categorical_variables <- function(X) {
+  classes_x <- lapply(X, unique)
+  classes_x <- sapply(classes_x, length)
+  categorical <- classes_x %in% 2
+  n_categorical <- sum(categorical)
+  list(categorical = categorical,
+       n_categorical = n_categorical)
 }
 
 normalization_x <- function(X, p_x, intercept_classif) {

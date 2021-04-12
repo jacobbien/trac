@@ -31,16 +31,31 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
     errs <- matrix(NA, ncol(fit[[iw]]$beta), nfolds)
     for (i in seq(nfolds)) {
       cat("fold", i, fill = TRUE)
-      if(is.null(fit[[iw]]$method)) fit[[iw]]$method <- "regression"
-      # train on all but i-th fold (and use settings from fit):
-      fit_folds[[i]] <- trac(Z[-folds[[i]], ],
-        y[-folds[[i]]],
-        A,
-        X[-folds[[i]], ],
-        fraclist = fit[[iw]]$fraclist,
-        w = fit[[iw]]$w,
-        method = fit[[iw]]$method
-      )
+      if(is.null(fit[[iw]]$method)) fit[[iw]]$method <- "regr"
+      if(fit[[iw]]$method == "classif_huber") {
+        # train on all but i-th fold (and use settings from fit):
+        fit_folds[[i]] <- trac(Z[-folds[[i]], ],
+                               y[-folds[[i]]],
+                               A,
+                               X[-folds[[i]], ],
+                               fraclist = fit[[iw]]$fraclist,
+                               w = fit[[iw]]$w,
+                               method = fit[[iw]]$method,
+                               rho = fit[[iw]]$rho,
+                               normalized = fit[[iw]]$normalized
+        )
+      } else {
+        # train on all but i-th fold (and use settings from fit):
+        fit_folds[[i]] <- trac(Z[-folds[[i]], ],
+                               y[-folds[[i]]],
+                               A,
+                               X[-folds[[i]], ],
+                               fraclist = fit[[iw]]$fraclist,
+                               w = fit[[iw]]$w,
+                               method = fit[[iw]]$method,
+                               normalized = fit[[iw]]$normalized
+        )
+      }
       if (fit[[iw]]$refit) {
         fit_folds[[i]] <- refit_trac(
           fit_folds[[i]], Z[-folds[[i]], ],
