@@ -289,7 +289,8 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
       method = method,
       intercept = intercept,
       rho = rho,
-      hyper_prob = hyper_prob
+      hyper_prob = hyper_prob,
+      normalized = normalized
     )
   }
   fit
@@ -367,7 +368,7 @@ check_method <- function(method, y, rho = 0.0) {
 }
 
 get_categorical_variables <- function(X) {
-  classes_x <- sapply(X, unique)
+  classes_x <- lapply(X, unique)
   classes_x <- sapply(classes_x, length)
   categorical <- classes_x %in% 2
   n_categorical <- sum(categorical)

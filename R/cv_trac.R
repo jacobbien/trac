@@ -47,7 +47,8 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
                                fraclist = fit[[iw]]$fraclist,
                                w = fit[[iw]]$w,
                                method = fit[[iw]]$method,
-                               rho = fit[[iw]]$rho
+                               rho = fit[[iw]]$rho,
+                               normalized = fit[[iw]]$normalized
         )
       } else {
         # train on all but i-th fold (and use settings from fit):
@@ -57,7 +58,8 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
                                X[-folds[[i]], ],
                                fraclist = fit[[iw]]$fraclist,
                                w = fit[[iw]]$w,
-                               method = fit[[iw]]$method
+                               method = fit[[iw]]$method,
+                               normalized = fit[[iw]]$normalized
         )
       }
 
