@@ -34,4 +34,7 @@ Imports:
     magrittr,
     rlang
 Suggests: 
+    rmarkdown,
+    knitr,
     testthat
+VignetteBuilder: knitr
