@@ -13,6 +13,7 @@ Authors@R:
              family = "Yan",
              role = "aut"))
 Description: Performs tree-based aggregation of compositional data with a particular focus on microbiome data.
+URL: https://jacobbien.github.io/trac, https://github.com/jacobbien/trac
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
