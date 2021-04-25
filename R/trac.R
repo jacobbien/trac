@@ -109,7 +109,10 @@ trac <- function(Z, y, A, fraclist = NULL, nlam = 20, min_frac = 1e-4, w = NULL)
     prob$solve()
 
     # extract outputs
-    delta <- as.matrix(purrr::map_dfc(prob$solution$PATH$BETAS, as.numeric))
+    delta <- purrr::map(prob$solution$PATH$BETAS, as.numeric) %>%
+      rlang::set_names(paste0("V", 1:length(prob$solution$PATH$BETAS))) %>%
+      dplyr::bind_cols() %>%
+      as.matrix()
     # gammahat = W^-1 deltahat and betahat = A gammahat
     gamma <- diag(1 / w[[iw]]) %*% delta
     beta <- A %*% gamma

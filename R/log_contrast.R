@@ -70,7 +70,10 @@ sparse_log_contrast <- function(Z, y, C = NULL, fraclist = NULL, nlam = 20, min_
   prob$solve()
 
   # extract outputs
-  beta <- as.matrix(purrr::map_dfc(prob$solution$PATH$BETAS, as.numeric))
+  beta <- purrr::map(prob$solution$PATH$BETAS, as.numeric) %>%
+    rlang::set_names(paste0("V", 1:length(prob$solution$PATH$BETAS))) %>%
+    dplyr::bind_cols() %>%
+    as.matrix()
   lambda_classo <- prob$model_selection$PATHparameters$lambdas
   beta0 <- ybar - crossprod(beta, v)
   rownames(beta) <- colnames(Z)

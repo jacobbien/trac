@@ -71,13 +71,6 @@ We now solve the `trac` optimization problem using a path algorithm (implemented
 
 ```r
 fit <- trac(ztr, ytr, A = sCD14$A, min_frac = 1e-2, nlam = 30)
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 ```
 By default, `trac` gives us the model known as "trac (a=1)" in the [paper](https://www.biorxiv.org/content/10.1101/2020.09.01.277632v1.full).  For other choices of weights, see the section on weights below.
 
@@ -126,45 +119,10 @@ The function `cv_trac` by default performs 5-fold cross validation.
 ```r
 cvfit <- cv_trac(fit, Z = ztr, y = ytr, A = sCD14$A)
 #> fold 1
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 #> fold 2
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 #> fold 3
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 #> fold 4
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 #> fold 5
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 ```
 
 We can use the function `plot_cv_trac` to visualize.
@@ -241,13 +199,6 @@ Thus, when the paper writes "trac (a=1)", this corresponds to the `trac` functio
 ```r
 fit2 <- trac(ztr, ytr, A = sCD14$A, min_frac = 1e-2,
              nlam = 30, w = Matrix::colSums(sCD14$A)^0.5)
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 ```
 
 
@@ -268,13 +219,6 @@ fit_family <- trac(log_pseudo(sCD14_family$x[tr, ]),
                    sCD14_family$y[tr],
                    sCD14_family$A,
                    min_frac = 1e-2, nlam = 30)
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 ```
 
 ### Sparse Log-Contrast
@@ -284,58 +228,16 @@ One can also fit sparse log-contrast models in `trac`.
 
 ```r
 fit_slc <- sparse_log_contrast(ztr, ytr, min_frac = 1e-2, nlam = 30)
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 ```
 
 
 ```r
 cvfit_slc <- cv_sparse_log_contrast(fit_slc, Z = ztr, y = ytr)
 #> fold 1
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 #> fold 2
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 #> fold 3
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 #> fold 4
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 #> fold 5
-#> New names:
-#> * NA -> ...1
-#> * NA -> ...2
-#> * NA -> ...3
-#> * NA -> ...4
-#> * NA -> ...5
-#> * ...
 yhat_te_slc <- predict_trac(list(fit_slc), new_Z = zte)[[1]]
 testerr_slc <- colMeans((yhat_te_slc - yte)^2)
 nnz_slc <- colSums(fit_slc$beta != 0)
