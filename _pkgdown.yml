@@ -1,0 +1,34 @@
+reference:
+- title: "Preprocessing"
+  desc: "Functions for preparing your data for `trac`."
+- contents:
+  - aggregate_to_level
+  - tax_table_to_phylo
+  - phylo_to_A
+- title: "Main trac functionality"
+  desc: >
+    Functions for fitting `trac`, choosing tuning parameter,
+    and making predictions
+- contents:
+  - trac
+  - cv_trac
+  - predict_trac
+- title: "Plotting functions"
+- title: "Sparse log contrast functions"
+- contents:
+  - sparse_log_contrast
+  - cv_sparse_log_contrast
+- contents:
+  - plot_trac_path
+  - plot_cv_trac
+- title: "An example data set"
+  desc: "A gut microbiome data set used in vignette"
+- contents:
+  - sCD14
+- title: "Refitting functions"
+  desc: >
+    Functions for fitting unregularized versions subject to the sparsity
+    constraints learned by trac or sparse log-contrast
+- contents:
+  - refit_trac
+  - refit_sparse_log_contrast
