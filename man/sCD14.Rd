@@ -14,8 +14,10 @@ with n = 152 rows corresponding to people and p = 539 columns corresponding
 to OTUs.}
 \item{tree}{Taxonomic tree of class \code{phylo}}
 \item{tax}{A data frame containing the taxonomic information for each OTU}
-\item{A}{A binary matrix encoding the tree structure with p = 539 rows, corresponding to leaves, and 626 columns, corresponding to all non-root nodes in the tree.  See \href{https://www.biorxiv.org/content/10.1101/2020.09.01.277632v1.full}{Tree-Aggregated Predictive Modeling of Microbiome Data} for the definition of A.}
-}
+\item{A}{A binary matrix encoding the tree structure with p = 539 rows,
+corresponding to leaves, and 626 columns, corresponding to all non-root nodes
+in the tree.  See \href{https://www.biorxiv.org/content/10.1101/2020.09.01.277632v1.full}{Tree-Aggregated Predictive Modeling of Microbiome Data} for
+the definition of A.} }
 }
 \usage{
 sCD14
