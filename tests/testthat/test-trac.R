@@ -108,7 +108,9 @@ test_that("Test TRAC functionalities", {
   expect_true(all(fit_huber[[1]]$alpha[, 10][c(3, 4, 6, 7)] != 0))
 
 
-
+  fit_classif <- trac(Z, y_classif, A, X = X, method = "classif",
+                      intercept = FALSE, w_meta = c(100, 100))
+  expect_true(all(fit_classif[[1]]$alpha[, 10][c(6, 7)] == 0))
 
   y <- 0.5 + Z_mod[, 4] - Z_mod[, 3] + X[, 1] + (as.numeric(X[, 2]) - 1) +
     rnorm(n)

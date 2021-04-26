@@ -37,6 +37,8 @@
 #'   fraclist non-NULL)
 #' @param w vector of positive weights of length t_size - 1 (default: all equal
 #'   to 1). Or a list of num_w such vectors.
+#' @param w_meta vector of positive weights of length ncol(X) (default:
+#'   all equal to 1).
 #' @param method string which estimation method to use should be in
 #'   ("regr", "classif", "classif_huber")
 #' @param intercept only works for classification! Should the intercept be
@@ -62,7 +64,7 @@
 #'   that node's subtree.
 #' @export
 trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
-                 min_frac = 1e-4, w = NULL,
+                 min_frac = 1e-4, w = NULL, w_meta = NULL,
                  method = c("regr", "classif", "classif_huber"),
                  intercept = TRUE, normalized = TRUE,
                  rho = 0.0,
@@ -88,6 +90,9 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
       ))
     }
     p_x <- ncol(X)
+    if (is.null(w_meta)) w_meta <- rep(1, p_x)
+    if (!is.vector(w_meta)) stop("w_meta must be a matrix or a vector.")
+    if (length(w_meta) != p_x) stop("w_meta must be of length ncol(X)")
     A <- A_add_X(X = X, A = A, p = p, p_x = p_x)
     t_size <- ncol(A) + 1
   }
@@ -153,6 +158,8 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
         X[, categorical] <- sapply(X[, categorical], function(x) x - 1)
       }
     }
+    w_not_meta <- rep(1, (t_size - 1 - p_x))
+    w_meta <- c(w_not_meta, w_meta)
   }
   if (classification) {
     yt <- y
@@ -180,7 +187,6 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
   }
 
   if (!classification) intercept <- TRUE
-
   fit <- list()
   for (iw in seq(num_w)) {
     # for each w...
@@ -197,11 +203,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
       X = X_classo,
       C = C,
       y = array(yt))
-    if (classification) {
-      prob$formulation$classification <- TRUE
-    } else {
-      prob$formulation$classification <- FALSE
-    }
+    prob$formulation$classification <- classification
     prob$formulation$concomitant <- FALSE
     prob$model_selection$PATH <- TRUE
     prob$model_selection$CV <- FALSE
@@ -217,6 +219,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
     } else {
       prob$formulation$huber <- FALSE
     }
+    if (!is.null(X)) prob$formulation$w <- w_meta
     # solve  it
     prob$solve()
     # extract outputs
@@ -271,6 +274,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
           y = y,
           method = method,
           w = w[[iw]],
+          w_meta = w_meta,
           fraclist = lambda_classo,
           nfolds = 3,
           eps = eps,
@@ -286,6 +290,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
       alpha = alpha,
       fraclist = lambda_classo, # / (2 * n),
       w = w[[iw]],
+      w_meta = w_meta,
       fit_classo = prob,
       refit = FALSE,
       method = method,
@@ -317,11 +322,15 @@ A_add_X <- function(X, A, p, p_x) {
   # add rownames
   if (!is.null(A_rownames)) {
     if (!is.null(X_rownames)) {
-      rownames(A) <- c(A_rownames, X_rownames)
-      colnames(A) <- c(A_colnames, X_rownames)
+      if (!is.null(A_colnames)) {
+        dimnames(A) <- list(c(A_rownames, X_rownames),
+                            c(A_colnames, X_rownames))
+      } else {
+        rownames(A) <- c(A_rownames, X_rownames)
+      }
     } else {
-      rownames(A) <- c(A_rownames, rep("", times = p_x))
-      colnames(A) <- c(A_colnames, rep("", times = p_x))
+      dimnames(A) <- list(c(A_rownames, rep("", times = p_x)),
+                          c(A_colnames, rep("", times = p_x)))
     }
   } else {
     if (!is.null(X_rownames)) {
@@ -373,9 +382,7 @@ check_method <- function(method, y, rho = 0.0) {
 }
 
 get_categorical_variables <- function(X) {
-  classes_x <- lapply(X, unique)
-  classes_x <- sapply(classes_x, length)
-  categorical <- classes_x %in% 2
+  categorical <- sapply(X, is.factor)
   n_categorical <- sum(categorical)
   list(categorical = categorical,
        n_categorical = n_categorical)
@@ -440,8 +447,8 @@ rescale_betas <- function(beta, p_x, p, n_numeric, categorical, xs, xm) {
 }
 
 
-get_probability_cv <- function(Z, X, A, y, method, w, fraclist, nfolds = 3, eps,
-                           n_lambda) {
+get_probability_cv <- function(Z, X, A, y, method, w, w_meta, fraclist,
+                               nfolds = 3, eps, n_lambda) {
   # calculate the hyperparameter for platts method. Do three fold cv
   # to obtain the decision values and pass to the platt algorithm for each
   # lambda
@@ -459,6 +466,7 @@ get_probability_cv <- function(Z, X, A, y, method, w, fraclist, nfolds = 3, eps,
                            X[-folds[[i]], ],
                            fraclist = fraclist,
                            w = w,
+                      w_meta = w_meta,
                            method = method,
                            output = "raw")
     decision_value <- predict_trac(fit_folds, Z[folds[[i]], ],

@@ -13,6 +13,7 @@ trac(
   nlam = 20,
   min_frac = 1e-04,
   w = NULL,
+  w_meta = NULL,
   method = c("regr", "classif", "classif_huber"),
   intercept = TRUE,
   normalized = TRUE,
@@ -40,6 +41,9 @@ fraclist non-NULL)}
 
 \item{w}{vector of positive weights of length t_size - 1 (default: all equal
 to 1). Or a list of num_w such vectors.}
+
+\item{w_meta}{vector of positive weights of length ncol(X) (default:
+all equal to 1).}
 
 \item{method}{string which estimation method to use should be in
 ("regr", "classif", "classif_huber")}

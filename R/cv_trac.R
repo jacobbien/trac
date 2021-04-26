@@ -30,6 +30,7 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
   } else {
     nfolds <- length(folds)
   }
+
   cv <- list()
   fit_folds <- list() # save this to reuse by log-ratio's cv function
   for (iw in seq_along(fit)) {
@@ -38,6 +39,8 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
     for (i in seq(nfolds)) {
       cat("fold", i, fill = TRUE)
       if(is.null(fit[[iw]]$method)) fit[[iw]]$method <- "regr"
+      if(is.null(fit[[iw]]$w_meta)) fit[[iw]]$w_meta <- NULL
+
       if(fit[[iw]]$method == "classif_huber") {
         # train on all but i-th fold (and use settings from fit):
         fit_folds[[i]] <- trac(Z[-folds[[i]], ],
@@ -46,6 +49,7 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
                                X[-folds[[i]], ],
                                fraclist = fit[[iw]]$fraclist,
                                w = fit[[iw]]$w,
+                               w_meta = fit[[iw]]$w_meta,
                                method = fit[[iw]]$method,
                                rho = fit[[iw]]$rho,
                                normalized = fit[[iw]]$normalized
@@ -58,6 +62,7 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
                                X[-folds[[i]], ],
                                fraclist = fit[[iw]]$fraclist,
                                w = fit[[iw]]$w,
+                               w_meta = fit[[iw]]$w_meta,
                                method = fit[[iw]]$method,
                                normalized = fit[[iw]]$normalized
         )
