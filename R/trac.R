@@ -159,7 +159,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
       }
     }
     w_not_meta <- rep(1, (t_size - 1 - p_x))
-    w_meta <- c(w_not_meta, w_meta)
+    w_x <- c(w_not_meta, w_meta)
   }
   if (classification) {
     yt <- y
@@ -219,7 +219,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
     } else {
       prob$formulation$huber <- FALSE
     }
-    if (!is.null(X)) prob$formulation$w <- w_meta
+    if (!is.null(X)) prob$formulation$w <- w_x
     # solve  it
     prob$solve()
     # extract outputs

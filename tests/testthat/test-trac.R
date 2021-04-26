@@ -281,6 +281,6 @@ test_that("Test TRAC functionalities", {
                               output = "probability")
   expect_lt(max(probability[[1]][, 10]), 1)
   expect_gt(min(probability[[1]][, 10]), 0)
-  cvfit_classif <- cv_trac(fit_classif, Z = Z, y = y_classif, A = A, X = X,
-                           stratified = TRUE)
+  expect_warning(cv_trac(fit_classif, Z = Z, y = y_classif, A = A, X = X,
+                           stratified = TRUE))
 })
