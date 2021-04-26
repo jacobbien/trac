@@ -10,14 +10,14 @@ trac(
   A,
   X = NULL,
   fraclist = NULL,
-  eps = 0.001,
   nlam = 20,
   min_frac = 1e-04,
   w = NULL,
-  method = c("regression", "classification", "classification_huber"),
-  intercept_classif = TRUE,
+  w_meta = NULL,
+  method = c("regr", "classif", "classif_huber"),
+  intercept = TRUE,
   normalized = TRUE,
-  rho_classification = 0,
+  rho = 0,
   output = c("raw", "probability")
 )
 }
@@ -42,21 +42,24 @@ fraclist non-NULL)}
 \item{w}{vector of positive weights of length t_size - 1 (default: all equal
 to 1). Or a list of num_w such vectors.}
 
+\item{w_meta}{vector of positive weights of length ncol(X) (default:
+all equal to 1).}
+
 \item{method}{string which estimation method to use should be in
 ("regression", "classification", "classification_huber")}
-
-\item{intercept_classif}{boolean indicating if the intercept should be
-included for classification}
 
 \item{normalized}{logical: indicate if metadata should be normalized.
 In this case the calculation for each covariate / feature:
 (X-X_mean) / ||X||_2}
 
-\item{rho_classification}{value for huberized classification loss.
-Default = -0.0}
-
 \item{output}{logical: indicate if probabilities should be the output
 of classification task, needed for the predict_trac function}
+
+\item{intercept_classif}{boolean indicating if the intercept should be
+included for classification}
+
+\item{rho_classification}{value for huberized classification loss.
+Default = -0.0}
 }
 \value{
 a list of length num_w, where each list element corresponds to the

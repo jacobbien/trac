@@ -33,6 +33,7 @@ test_that("trac (a=1) on sCD14", {
   expect_equal(length(unique(fit[[1]]$beta[, 2])), 3)
 })
 
+
 test_that("trac (a=1/2) on sCD14", {
   skip_if_no_classo()
   fit2 <- trac(ztr, ytr, A = sCD14$A, min_frac = 1e-2,
