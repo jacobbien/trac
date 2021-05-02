@@ -13,3 +13,4 @@ system("mv figure/* .; rmdir figure")
 txt <- read_file("trac-example.Rmd") %>%
   str_replace_all("\\(figure/", "(")
 write_file(txt, file = "trac-example.Rmd")
+rmarkdown::render("trac-example.Rmd")
