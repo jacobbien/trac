@@ -266,20 +266,12 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
     if (output == "probability") {
       eps <- 1e-3
       if (!is.null(A)) A <- A[1:p, 1:(ncol(A) - p_x)]
-      hyper_prob <-
-        get_probability_cv(
-          Z = Z,
-          X = X,
-          A = A,
-          y = y,
-          method = method,
-          w = w[[iw]],
-          w_meta = w_meta,
-          fraclist = lambda_classo,
-          nfolds = 3,
-          eps = eps,
-          n_lambda = length(lambda_classo)
-          )
+      hyper_prob <- get_probability_cv(Z = Z, X = X, A = A, y = y,
+                                       method = method, w = w[[iw]],
+                                       w_meta = w_meta,
+                                       fraclist = lambda_classo, nfolds = 3,
+                                       eps = eps,
+                                       n_lambda = length(lambda_classo))
     } else {
       hyper_prob <- NULL
     }

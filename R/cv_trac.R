@@ -17,15 +17,13 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
                     summary_function = stats::median, stratified = FALSE) {
   n <- nrow(Z)
   p <- ncol(Z)
-  if (!is.null(X)) {
-    if (!is.data.frame(X)) X <- data.frame(X)
-  }
+  if (!is.null(X) & !is.data.frame(X)) X <- data.frame(X)
   stopifnot(length(y) == n)
   if (is.null(folds)) {
-    if (stratified != TRUE) {
-      folds <- ggb:::make_folds(n, nfolds)
-    } else {
+    if (stratified) {
       folds <- make_folds_stratified(n, nfolds, y)
+    } else {
+      folds <- ggb:::make_folds(n, nfolds)
     }
   } else {
     nfolds <- length(folds)
@@ -40,39 +38,25 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
       cat("fold", i, fill = TRUE)
       if(is.null(fit[[iw]]$method)) fit[[iw]]$method <- "regr"
       if(is.null(fit[[iw]]$w_meta)) fit[[iw]]$w_meta <- NULL
+      if(is.null(fit[[iw]]$rho)) fit[[iw]]$rho <- 0
 
-      if(fit[[iw]]$method == "classif_huber") {
-        # train on all but i-th fold (and use settings from fit):
-        fit_folds[[i]] <- trac(Z[-folds[[i]], ],
-                               y[-folds[[i]]],
-                               A,
-                               X[-folds[[i]], ],
-                               fraclist = fit[[iw]]$fraclist,
-                               w = fit[[iw]]$w,
-                               w_meta = fit[[iw]]$w_meta,
-                               method = fit[[iw]]$method,
-                               rho = fit[[iw]]$rho,
-                               normalized = fit[[iw]]$normalized
-        )
-      } else {
-        # train on all but i-th fold (and use settings from fit):
-        fit_folds[[i]] <- trac(Z[-folds[[i]], ],
-                               y[-folds[[i]]],
-                               A,
-                               X[-folds[[i]], ],
-                               fraclist = fit[[iw]]$fraclist,
-                               w = fit[[iw]]$w,
-                               w_meta = fit[[iw]]$w_meta,
-                               method = fit[[iw]]$method,
-                               normalized = fit[[iw]]$normalized
-        )
-      }
+
+      # train on all but i-th fold (and use settings from fit):
+      fit_folds[[i]] <- trac(Z[-folds[[i]], ],
+                             y[-folds[[i]]],
+                             A,
+                             X[-folds[[i]], ],
+                             fraclist = fit[[iw]]$fraclist,
+                             w = fit[[iw]]$w,
+                             w_meta = fit[[iw]]$w_meta,
+                             method = fit[[iw]]$method,
+                             rho = fit[[iw]]$rho,
+                             normalized = fit[[iw]]$normalized)
+
 
       if (fit[[iw]]$refit) {
-        fit_folds[[i]] <- refit_trac(
-          fit_folds[[i]], Z[-folds[[i]], ],
-          y[-folds[[i]]], A
-        )
+        fit_folds[[i]] <- refit_trac(fit_folds[[i]], Z[-folds[[i]], ],
+                                     y[-folds[[i]]], A)
       }
       if (fit[[iw]]$method == "regr" | is.null(fit[[iw]]$method)) {
         errs[, i] <- apply(
