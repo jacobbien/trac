@@ -4,14 +4,12 @@
 \alias{predict_trac}
 \title{Make predictions based on a trac fit}
 \usage{
-predict_trac(fit, new_Z, new_X = NULL)
+predict_trac(fit, new_Z)
 }
 \arguments{
 \item{fit}{output of the function \code{\link{trac}}}
 
 \item{new_Z}{a new data matrix (see \code{Z} from \code{\link{trac}})}
-
-\item{new_X}{a new data matrix (see \code{X} from \code{\link{trac}})}
 }
 \value{
 a vector of \code{nrow(new_Z)} predictions.
