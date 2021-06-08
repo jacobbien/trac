@@ -9,6 +9,7 @@ cv_trac(
   Z,
   y,
   A,
+  X = NULL,
   folds = NULL,
   nfolds = 5,
   summary_function = stats::median
@@ -17,7 +18,7 @@ cv_trac(
 \arguments{
 \item{fit}{output of \code{\link{trac}} function.}
 
-\item{Z, y, A}{same arguments as passed to \code{\link{trac}}}
+\item{Z, y, A, X}{same arguments as passed to \code{\link{trac}}}
 
 \item{folds}{a partition of \code{1:nrow(Z)}.}
 
