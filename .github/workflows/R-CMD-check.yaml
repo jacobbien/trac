@@ -20,12 +20,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-pandoc@v1
+        with:
+          pandoc-version: '2.7.3' # The pandoc version to download (if necessary) and use.
       - name: Install dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck", "devtools"))
           devtools::install_github("jacobbien/ggb")
           remotes::install_deps(dependencies = TRUE)
-          remotes::install_deps(dependencies = "website")
+#          remotes::install_deps(dependencies = "website")
           remotes::install_cran("lintr")
           remotes::install_cran("covr")
 #          remotes::install_github("rstudio/reticulate")
