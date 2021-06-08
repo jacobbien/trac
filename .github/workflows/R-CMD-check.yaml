@@ -28,7 +28,6 @@ jobs:
           install.packages(c("remotes", "rcmdcheck", "devtools"))
           devtools::install_github("jacobbien/ggb")
           remotes::install_deps(dependencies = TRUE)
-#          remotes::install_deps(dependencies = "website")
           remotes::install_cran("lintr")
           remotes::install_cran("covr")
 #          remotes::install_github("rstudio/reticulate")
