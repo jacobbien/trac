@@ -10,6 +10,8 @@
 #' @param nfolds number of folds for cross-validation
 #' @param summary_function how to combine the errors calculated on each
 #' observation within a fold (e.g. mean or median) (only for regression task)
+#' @param stratified if `TRUE` use stratified folds based on target variable
+#'   only for classification. Default set to FALSE.
 #' @export
 cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
                     summary_function = stats::median, stratified = FALSE) {
@@ -50,11 +52,12 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
                              method = fit[[iw]]$method,
                              rho = fit[[iw]]$rho,
                              normalized = fit[[iw]]$normalized)
+
       if (fit[[iw]]$refit) {
         fit_folds[[i]] <- refit_trac(fit_folds[[i]], Z[-folds[[i]], ],
                                      y[-folds[[i]]], A)
       }
-      if (fit[[iw]]$method == "regression" | is.null(fit[[iw]]$method)) {
+      if (fit[[iw]]$method == "regr" | is.null(fit[[iw]]$method)) {
         errs[, i] <- apply(
           (predict_trac(
             fit_folds[[i]],
@@ -63,8 +66,9 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
           2, summary_function
         )
       }
-      if (fit[[iw]]$method == "classification" |
-          fit[[iw]]$method == "classification_huber") {
+
+      if (fit[[iw]]$method == "classif" |
+          fit[[iw]]$method == "classif_huber") {
         # loss: max(0, 1 - y_hat * y)^2
         er <- sign(predict_trac(fit_folds[[i]],
                                 Z[folds[[i]],],

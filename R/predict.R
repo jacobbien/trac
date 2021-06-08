@@ -13,21 +13,29 @@ predict_trac <- function(fit, new_Z, new_X = NULL,
   # new_Z: n_new by p matrix
   # add to make make code backwards compatible
   if(is.null(fit[[1]]$method)) {
-    fit[[1]]$method <- "regression"
-    fit[[1]]$intercept_classif <- TRUE
+    fit[[1]]$method <- "regr"
+    fit[[1]]$intercept <- TRUE
   }
 
   output <- match.arg(output)
-  classification <- fit[[1]]$method %in% c("classification",
-                                           "classification_huber")
-  intercept_classif <- fit[[1]]$intercept_classif
+  classification <- fit[[1]]$method %in% c("classif",
+                                           "classif_huber")
+  intercept <- fit[[1]]$intercept
 
   yhat <- list()
   for (iw in seq_along(fit)) {
     if (!is.null(new_X)) {
+      categorical_list <- get_categorical_variables(new_X)
+      categorical <- categorical_list[["categorical"]]
+      n_categorical <- categorical_list[["n_categorical"]]
+      if (n_categorical > 0) {
+        new_X[, categorical] <- sapply(new_X[, categorical], as.numeric)
+        new_X[, categorical] <- sapply(new_X[, categorical], function(x) x - 1)
+      }
       new_Z <- cbind(new_Z, new_X)
+      new_Z <- as.matrix(new_Z)
     }
-    if (intercept_classif) {
+    if (intercept) {
       yhat[[iw]] <- t(as.numeric(fit[[iw]]$beta0) +
         t(as.matrix(new_Z %*% fit[[iw]]$beta)))
     } else {

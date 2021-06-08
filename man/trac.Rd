@@ -29,7 +29,7 @@ trac(
 \item{A}{p by (t_size-1) binary matrix giving tree structure (t_size is the
 total number of nodes and the -1 is because we do not include the root)}
 
-\item{X}{n by p' matrix containing metadata}
+\item{X}{n by p' matrix containing additional covariates}
 
 \item{fraclist}{(optional) vector of tuning parameter multipliers.  Or a list
 of length num_w of such vectors. Should be in (0, 1].}
@@ -46,20 +46,23 @@ to 1). Or a list of num_w such vectors.}
 all equal to 1).}
 
 \item{method}{string which estimation method to use should be in
-("regression", "classification", "classification_huber")}
+("regr", "classif", "classif_huber")}
 
-\item{normalized}{logical: indicate if metadata should be normalized.
+\item{intercept}{only works for classification! Should the intercept be
+fitted. Default is TRUE, set to FALSE if the intercept should not be
+included}
+
+\item{normalized}{if \code{TRUE} normalize the additional covariates.
 In this case the calculation for each covariate / feature:
-(X-X_mean) / ||X||_2}
+(X-X_mean) / ||X||_2
+The weights will be transformed back to the original scale.}
 
-\item{output}{logical: indicate if probabilities should be the output
-of classification task, needed for the predict_trac function}
+\item{rho}{value for huberized classification loss.
+Default = -0.0.}
 
-\item{intercept_classif}{boolean indicating if the intercept should be
-included for classification}
-
-\item{rho_classification}{value for huberized classification loss.
-Default = -0.0}
+\item{output}{only relevant for classification. String indicating whether
+the raw score output or probability for class 1 should be used.
+The probability is estimated with Platt’s probibalistic output}
 }
 \value{
 a list of length num_w, where each list element corresponds to the
