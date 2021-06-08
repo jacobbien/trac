@@ -12,7 +12,7 @@
 #' observation within a fold (e.g. mean or median) (only for regression task)
 #' @export
 cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
-                    summary_function = stats::median) {
+                    summary_function = stats::median, stratified = FALSE) {
   n <- nrow(Z)
   p <- ncol(Z)
   if (!is.null(X) & !is.data.frame(X)) X <- data.frame(X)
@@ -91,4 +91,34 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
     iw_1se = which.min(lapply(cv, function(cvv) cvv$m[cvv$i1se])),
     folds = folds
   )
+}
+
+#' This function creates stratified folds for cross validation for unbalanced
+#' data. The code is adopted from ggb:::make_folds
+#'
+#' @param n number of observations
+#' @param nfolds number of folds
+#' @param y variable with group assignment.
+
+make_folds_stratified <- function(n, nfolds, y) {
+  # Check if number of folds is greater than the max n of observations
+  # per group. If the number is greater at least one fold will not contain
+  # any observations of group of interest.
+  max_n_y <- max(table(y))
+  nfolds <- min(nfolds, max_n_y)
+  # Initiate the list in advance
+  folds <- vector(mode = "list", length = nfolds)
+  for (j in unique(y)) {
+    ixs <- which(y == j)
+    nn <- round(length(ixs) / nfolds)
+    sizes <- rep(nn, nfolds)
+    sizes[nfolds] <- sizes[nfolds] + length(ixs) - nn * nfolds
+    b <- c(0, cumsum(sizes))
+    ii <- sample(length(ixs))
+    ii <- ixs[ii]
+    for (i in seq(nfolds)) {
+      folds[[i]] <- c(folds[[i]], ii[seq(b[i] + 1, b[i + 1])])
+    }
+  }
+  folds
 }
