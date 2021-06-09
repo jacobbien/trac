@@ -58,3 +58,75 @@ test_that("sparse log contrast on sCD14", {
                tolerance = 1e-4)
   expect_equal(names(beta_nz), c("Otu000038", "Otu000070", "Otu000014"))
 })
+
+
+## Simple simulated data
+# set number of observations and number of otus/asvs
+n <- 150
+p <- 3
+
+# construct data matrix
+Z <- matrix(rnorm(n = n * p), nrow = n)
+# no negative values allowed
+Z <- abs(Z)
+# take log
+Z <- log(Z)
+# construct a taxonomic tree
+A <- diag(p)
+A <- cbind(A, c(1, 1, 0))
+# rooted
+A <- cbind(A, rep(x = 1, times = p))
+
+# add additional covariates
+X <- data.frame(numeric_feature = rnorm(n = n),
+                categorical_feature = sample(c(0, 1), replace = TRUE,
+                                             size = n))
+
+X$categorical_feature <- as.factor(X$categorical_feature)
+
+
+# construct an augmented dataset with the aggregrated levels
+Z_mod <- Z %*% A
+
+# without intercept
+# build y as the combination of column 4 and 3
+y <- Z_mod[, 4] - Z_mod[, 3] + rnorm(n)
+# for classifcation take the sign --> values in c(-1, 1)
+y_classif <- sign(y)
+
+test_that("trac classification on simulated data", {
+  skip_if_no_classo()
+  fit_classif <- trac(Z, y_classif, A, method = "classif", intercept = FALSE)
+  expect_true(all(fit_classif[[1]]$alpha[, 2][c(3,4)] != 0))
+  expect_true(all((fit_classif[[1]]$beta0 == 0)))
+
+  fit_huber <- trac(Z, y_classif, A, method = "classif_huber",
+                    intercept = FALSE)
+  expect_true(all(fit_huber[[1]]$alpha[, 2][c(3,4)] != 0))
+  expect_true(all(fit_huber[[1]]$beta0 == 0))
+})
+
+y <- 0.1 + Z_mod[, 4] - Z_mod[, 3] + X[, 1] + (as.numeric(X[, 2]) - 1) +
+  rnorm(n)
+# for classifcation take the sign --> values in c(-1, 1)
+y_classif <- sign(y)
+
+test_that("trac classification on simulated data with additional covariates", {
+  fit_classif_1 <- trac(Z, y_classif, A, X = X, method = "classif",
+                      intercept = TRUE,
+                      normalized = TRUE)
+  expect_true(all(fit_classif_1[[1]]$alpha[, 2][c(3,4)] != 0))
+
+  fit_huber_1 <- trac(Z, y_classif, A, X = X, method = "classif_huber",
+                    intercept = TRUE, normalized = TRUE)
+  expect_true(all(fit_huber_1[[1]]$alpha[, 2][c(3,4)] != 0))
+
+  fit_huber_2 <- trac(Z, y_classif, A, X = X, method = "classif_huber",
+                      intercept = TRUE, normalized = FALSE, rho = -1,
+                      w_meta = rep(0.0001, ncol(X)))
+  expect_true(all(fit_huber_2[[1]]$alpha[, 20][c(3, 4, 6, 7)] != 0))
+})
+
+
+
+
