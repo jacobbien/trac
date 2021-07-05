@@ -263,11 +263,11 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
     rownames(gamma) <- rownames(alpha) <- colnames(A)
     if (output == "probability") {
       eps <- 1e-3
-      if (!is.null(A)) A <- A[1:p, 1:(ncol(A) - p_x)]
+      if (!is.null(A) & !is.null(X)) A <- A[1:p, 1:(ncol(A) - p_x)]
       hyper_prob <- get_probability_cv(Z = Z, X = X, A = A, y = y,
                                        method = method, w = w[[iw]],
                                        w_meta = w_meta,
-                                       fraclist = lambda_classo, nfolds = 3,
+                                       fraclist = lambda_classo, nfolds = 5,
                                        eps = eps,
                                        n_lambda = length(lambda_classo))
     } else {
@@ -439,7 +439,7 @@ rescale_betas <- function(beta, p_x, p, n_numeric, categorical, xs, xm) {
 }
 
 get_probability_cv <- function(Z, X, A, y, method, w, w_meta, fraclist,
-                               nfolds = 3, eps, n_lambda) {
+                               nfolds = 5, eps, n_lambda) {
   # calculate the hyperparameter for platts method. Do three fold cv
   # to obtain the decision values and pass to the platt algorithm for each
   # lambda
@@ -452,14 +452,14 @@ get_probability_cv <- function(Z, X, A, y, method, w, w_meta, fraclist,
   label <- c()
   for (i in seq(nfolds)) {
     fit_folds <- trac(Z[-folds[[i]], ],
-                           y[-folds[[i]]],
-                           A,
-                           X[-folds[[i]], ],
-                           fraclist = fraclist,
-                           w = w,
+                      y[-folds[[i]]],
+                      A,
+                      X[-folds[[i]], ],
+                      fraclist = fraclist,
+                      w = w,
                       w_meta = w_meta,
-                           method = method,
-                           output = "raw")
+                      method = method,
+                      output = "raw")
     decision_value <- predict_trac(fit_folds, Z[folds[[i]], ],
                                    X[folds[[i]], ])[[1]]
     decision_values <- rbind(decision_values, decision_value)
