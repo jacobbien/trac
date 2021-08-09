@@ -77,19 +77,6 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
   output <- match.arg(output)
   method <- match.arg(method)
 
-
-  if (is.null(w)) w <- list(rep(1, t_size - 1))
-  if (is.numeric(w)) w <- list(w)
-  if (!is.list(w)) stop("w must be a list.")
-  if (any(lapply(w, length) != t_size - 1)) {
-    stop("every element of w must be of length (t_size - 1).")
-  }
-  if (any(unlist(lapply(w, function(ww) any(ww <= 0))))) {
-    # for simplicity, for now we require this.
-    stop("every element of w must be positive.")
-  }
-  num_w <- length(w)
-
   if (!is.null(X)) {
     # basic check of input metadata X
     stopifnot(nrow(X) == n)
@@ -108,6 +95,20 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
     A <- A_add_X(X = X, A = A, p = p, p_x = p_x)
     t_size <- ncol(A) + 1
   }
+
+  if (is.null(w)) w <- list(rep(1, t_size - 1))
+  if ((!is.null(w_meta)) & (!is.null(w)) & is.numeric(w)) w <- c(w, rep(1, p_x))
+  if (is.numeric(w)) w <- list(w)
+  if (!is.list(w)) stop("w must be a list.")
+  if (any(lapply(w, length) != t_size - 1)) {
+    stop("every element of w must be of length (t_size - 1).")
+  }
+  if (any(unlist(lapply(w, function(ww) any(ww <= 0))))) {
+    # for simplicity, for now we require this.
+    stop("every element of w must be positive.")
+  }
+  num_w <- length(w)
+
 
     # define supported methods .. maybe add partial matching?
   method_check <- check_method(method = method, y = y,
