@@ -69,14 +69,14 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
                  intercept = TRUE, normalized = TRUE,
                  rho = 0.0,
                  output = c("raw", "probability")) {
+  # input check
   n <- length(y)
   stopifnot(nrow(Z) == n)
   p <- ncol(Z)
   t_size <- ncol(A) + 1
-
+  # partial matching for the output and method
   output <- match.arg(output)
   method <- match.arg(method)
-
   if (!is.null(X)) {
     # basic check of input metadata X
     stopifnot(nrow(X) == n)
@@ -88,14 +88,18 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
         sep = " "
       ))
     }
+    # define the number of additional covariates
     p_x <- ncol(X)
+    # create new weights
     if (is.null(w_meta)) w_meta <- rep(1, p_x)
     if (!is.vector(w_meta)) stop("w_meta must be a matrix or a vector.")
     if (length(w_meta) != p_x) stop("w_meta must be of length ncol(X)")
+    # add the non-compositional data as a diaginal matrix attached to A
     A <- A_add_X(X = X, A = A, p = p, p_x = p_x)
+    # define the new size of t
     t_size <- ncol(A) + 1
   }
-
+  # create the weights and transform to list
   if (is.null(w)) w <- list(rep(1, t_size - 1))
   if ((!is.null(w_meta)) & (!is.null(w)) & is.numeric(w)) w <- c(w, rep(1, p_x))
   if (is.numeric(w)) w <- list(w)
@@ -110,7 +114,8 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
   num_w <- length(w)
 
 
-    # define supported methods .. maybe add partial matching?
+  # define supported methods and call helper function
+  # to check input
   method_check <- check_method(method = method, y = y,
                                rho = rho)
   classification <- method_check$classification
@@ -135,23 +140,24 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
   #
   # Given a solution deltahat, we can get
   #   gammahat = W^-1 deltahat and betahat = A gammahat
-
+  # create faclist if not given
   if (!is.null(fraclist)) {
     if (num_w == 1 & !is.list(fraclist)) fraclist <- list(fraclist)
     stopifnot(unlist(fraclist) >= 0 & unlist(fraclist) <= 1)
   }
-
   if (is.null(fraclist)) {
     fraclist <- lapply(1:num_w,
                        function(x) exp(seq(0, log(min_frac), length = nlam)))
   }
-
+  # normalize the non-compositional data if wanted
   if (!is.null(X)) {
     if (normalized) {
+      # call the normalization helper function
       normalized_values <-
         normalization_x(X = X, p_x = p_x, intercept = intercept)
       X <- normalized_values$X
     } else {
+      # get the number of categorical variables if no normalization is applied
       categorical_list <- get_categorical_variables(X)
       categorical <- categorical_list[["categorical"]]
       n_categorical <- categorical_list[["n_categorical"]]
@@ -160,24 +166,47 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
         X[, categorical] <- sapply(X[, categorical], function(x) x - 1)
       }
     }
+    # define the weights as 1 for every non compositional covariates
+    # since c-lasso can now handle weights and we do not need to transform
+    # them anymore and pass them directly
     w_not_meta <- rep(1, (t_size - 1 - p_x))
     w_x <- c(w_not_meta, w_meta)
   }
+  # for classification we do not need to scale the output
   if (classification) {
+    # clr transformation on Z
     yt <- y
     Zbar <- Matrix::rowMeans(Z)
     Z_clr <- Z - Zbar
-    if (!is.null(X)) Z_clr <- as.matrix(cbind(Z_clr, X))
-    M <- as.matrix(Z_clr %*% A)
-  } else {
-    Zbar <- Matrix::rowMeans(Z)
-    Z_clr <- Z - Zbar
-    ybar <- mean(y)
-    yt <- y - ybar
+    # add the additional covariates
     if (!is.null(X)) Z_clr <- as.matrix(cbind(Z_clr, X))
     Z_clrA <- as.matrix(Z_clr %*% A)
+    # define number of nodes and leafs under the node in order to
+    # calculate the geom mean
     v <- Matrix::colMeans(Z_clrA)
     if (!is.null(X)) {
+      M <- Z_clrA
+      M[, 1:(t_size - 1 - ncol(X))] <-
+        Matrix::t(Matrix::t(Z_clrA[, 1:(t_size - 1 - ncol(X))]) -
+                    v[1:(t_size - 1 - ncol(X))])
+    } else {
+      M <- Matrix::t(Matrix::t(Z_clrA) - v)
+    }
+  } else {
+    # clr transformation on Z
+    Zbar <- Matrix::rowMeans(Z)
+    Z_clr <- Z - Zbar
+    # scale y
+    ybar <- mean(y)
+    yt <- y - ybar
+    # clr transformation and aggregation with A
+    if (!is.null(X)) Z_clr <- as.matrix(cbind(Z_clr, X))
+    Z_clrA <- as.matrix(Z_clr %*% A)
+    # define number of nodes and leafs under the node in order to
+    # calculate the geom mean
+    v <- Matrix::colMeans(Z_clrA)
+    if (!is.null(X)) {
+      # calculate the geometric mean only for compositional data
       M <- Z_clrA
       M[, 1:(t_size - 1 - ncol(X))] <-
         Matrix::t(Matrix::t(Z_clrA[, 1:(t_size - 1 - ncol(X))]) -
@@ -186,9 +215,11 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
     M <- Matrix::t(Matrix::t(Z_clrA) - v)
     }
   }
-
+  # always use a intercept when not classification due to the nature of the
+  # estimation
   if (!classification) intercept <- TRUE
   fit <- list()
+  # define the weighted l1 norm penalization
   for (iw in seq(num_w)) {
     # for each w...
     #  C is 1_p^T A W^-1
@@ -376,6 +407,7 @@ check_method <- function(method, y, rho = 0.0) {
 }
 
 get_categorical_variables <- function(X) {
+  # fct to get categorical covariates
   categorical <- sapply(X, is.factor)
   n_categorical <- sum(categorical)
   list(categorical = categorical,
@@ -384,7 +416,7 @@ get_categorical_variables <- function(X) {
 
 
 normalization_x <- function(X, p_x, intercept) {
-  # normalize metadata. (x-mean(x)) / norm(x)
+  # normalize metadata. (x-mean(x)) / norm(x) for numerical variables
   categorical_list <- get_categorical_variables(X)
   categorical <- categorical_list[["categorical"]]
   n_categorical <- categorical_list[["n_categorical"]]
@@ -411,6 +443,7 @@ normalization_x <- function(X, p_x, intercept) {
     xm <- NULL
     xs <- NULL
   }
+  # one hot encoding for categorical input
   if (n_categorical > 0) {
     X[, categorical] <- sapply(X[, categorical], as.numeric)
     X[, categorical] <- sapply(X[, categorical], function(x) x - 1)
