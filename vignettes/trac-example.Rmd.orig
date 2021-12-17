@@ -199,6 +199,6 @@ nnz_slc <- colSums(fit_slc$beta != 0)
 tibble(nnz = nnz_slc, testerr = testerr_slc) %>%
   ggplot(aes(x = nnz, y = testerr)) +
   geom_point() +
-  geom_vline(xintercept = nnz[cvfit$cv[[1]]$i1se])
+  geom_vline(xintercept = nnz_slc[cvfit$cv[[1]]$i1se])
 ```
 

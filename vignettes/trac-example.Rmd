@@ -150,15 +150,15 @@ Using the 1SE rule results in the following nonzero `alpha` coefficients.
 ```r
 show_nonzeros(fit[[1]]$alpha[, cvfit$cv[[1]]$i1se])
 #>                                                         Life::Bacteria::Actinobacteria 
-#>                                                                              -501.4344 
+#>                                                                              -501.4342 
 #> Life::Bacteria::Bacteroidetes::Bacteroidia::Bacteroidales::Bacteroidaceae::Bacteroides 
 #>                                                                               286.8039 
 #>                 Life::Bacteria::Firmicutes::Clostridia::Clostridiales::Ruminococcaceae 
-#>                                                                              2221.7521 
+#>                                                                              2221.7522 
 #>                 Life::Bacteria::Firmicutes::Clostridia::Clostridiales::Lachnospiraceae 
-#>                                                                             -1644.8563 
+#>                                                                             -1644.8562 
 #>                                                                         Life::Bacteria 
-#>                                                                              -362.2653
+#>                                                                              -362.2657
 ```
 ### Making predictions
 
@@ -248,7 +248,7 @@ nnz_slc <- colSums(fit_slc$beta != 0)
 tibble(nnz = nnz_slc, testerr = testerr_slc) %>%
   ggplot(aes(x = nnz, y = testerr)) +
   geom_point() +
-  geom_vline(xintercept = nnz[cvfit$cv[[1]]$i1se])
+  geom_vline(xintercept = nnz_slc[cvfit$cv[[1]]$i1se])
 ```
 
 ![plot of chunk plot_slc_testerr](plot_slc_testerr-1.png)
