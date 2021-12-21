@@ -257,6 +257,7 @@ trac <- function(Z, y, A, X = NULL, fraclist = NULL, nlam = 20,
     # extract outputs
 
     delta <- as.matrix(prob$solution$PATH$BETAS)
+    # Warn the user if the solver could not solve the problem
     if (sum(is.nan(delta)) > 0) {
       warning("There is a problem with the estimation,
               try a different method or without interception")
