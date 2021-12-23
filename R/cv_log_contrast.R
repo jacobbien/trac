@@ -11,11 +11,16 @@
 #' @param summary_function how to combine the errors calculated on each
 #' observation within a fold (e.g. mean or median)
 #' @export
-cv_sparse_log_contrast <- function(fit, Z, y, folds = NULL, nfolds = 5, summary_function = stats::median) {
+cv_sparse_log_contrast <- function(fit, Z, y, folds = NULL, nfolds = 5,
+                                   summary_function = stats::median,
+                                   additional_covariates = NULL) {
   n <- nrow(Z)
   p <- ncol(Z)
   stopifnot(length(y) == n)
-  if(is.null(folds)) folds <- ggb:::make_folds(n, nfolds)
+  if (!is.null(additional_covariates) & !is.data.frame(additional_covariates)) {
+    additional_covariates <- data.frame(additional_covariates)
+  }
+  if (is.null(folds)) folds <- ggb:::make_folds(n, nfolds)
   else
     nfolds <- length(folds)
   cv <- list()
@@ -23,14 +28,43 @@ cv_sparse_log_contrast <- function(fit, Z, y, folds = NULL, nfolds = 5, summary_
   errs <- matrix(NA, ncol(fit$beta), nfolds)
   for (i in seq(nfolds)) {
     cat("fold", i, fill = TRUE)
+    # add for backward compatibility
+    if (is.null(fit$method)) fit$method <- "regr"
+    if (is.null(fit$w_additional_covariates)) {
+      fit$w_additional_covariates <- NULL
+    }
+    if (is.null(fit$rho)) fit$rho <- 0
+    if (is.null(fit$normalized)) fit$normalized <- FALSE
     # train on all but i-th fold (and use settings from fit):
     fit_folds[[i]] <- sparse_log_contrast(Z[-folds[[i]], ],
                                           y[-folds[[i]]],
+                                          additional_covariates[-folds[[i]], ],
                                           fit$C,
-                                          fraclist = fit$fraclist)
+                                          fraclist = fit$fraclist,
+                                          w_additional_covariates =
+                                            fit$w_additional_covariates,
+                                          method = fit$method,
+                                          rho = fit$rho,
+                                          normalized = fit$normalized)
     if (fit$refit) stop("Not yet supported.")
-    errs[, i] <- apply((predict_trac(list(fit_folds[[i]]), Z[folds[[i]], ])[[1]] - y[folds[[i]]])^2,
-                       2, summary_function)
+    if (fit$method == "regr" | is.null(fit$method)) {
+      errs[, i] <- apply((predict_trac(
+        list(fit_folds[[i]]),
+          Z[folds[[i]], ],
+          additional_covariates[folds[[i]], ])[[1]] - y[folds[[i]]])^2,
+        2, summary_function
+      )
+    }
+
+    if (fit$method == "classif" |
+        fit$method == "classif_huber") {
+      # loss: max(0, 1 - y_hat * y)^2
+      er <- sign(predict_trac(list(fit_folds[[i]]),
+                              Z[folds[[i]],],
+                              additional_covariates[folds[[i]],])[[1]]) !=
+        c(y[folds[[i]]])
+      errs[, i] <- colMeans(er)
+    }
   }
   m <- rowMeans(errs)
   se <- apply(errs, 1, stats::sd) / sqrt(nfolds)

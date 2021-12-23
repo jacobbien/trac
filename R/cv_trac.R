@@ -5,7 +5,8 @@
 #' misclassification error.
 #'
 #' @param fit output of \code{\link{trac}} function.
-#' @param Z,y,A,X same arguments as passed to \code{\link{trac}}
+#' @param Z,y,A,additional_covariates same arguments as passed to
+#'    \code{\link{trac}}
 #' @param folds a partition of \code{1:nrow(Z)}.
 #' @param nfolds number of folds for cross-validation
 #' @param summary_function how to combine the errors calculated on each
@@ -13,11 +14,14 @@
 #' @param stratified if `TRUE` use stratified folds based on target variable
 #'   only for classification. Default set to FALSE.
 #' @export
-cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
-                    summary_function = stats::median, stratified = FALSE) {
+cv_trac <- function(fit, Z, y, A, additional_covariates = NULL, folds = NULL,
+                    nfolds = 5, summary_function = stats::median,
+                    stratified = FALSE) {
   n <- nrow(Z)
   p <- ncol(Z)
-  if (!is.null(X) & !is.data.frame(X)) X <- data.frame(X)
+  if (!is.null(additional_covariates) & !is.data.frame(additional_covariates)) {
+    additional_covariates <- data.frame(additional_covariates)
+  }
   stopifnot(length(y) == n)
   if (is.null(folds)) {
     if (stratified) {
@@ -36,19 +40,24 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
     errs <- matrix(NA, ncol(fit[[iw]]$beta), nfolds)
     for (i in seq(nfolds)) {
       cat("fold", i, fill = TRUE)
-      if(is.null(fit[[iw]]$method)) fit[[iw]]$method <- "regr"
-      if(is.null(fit[[iw]]$w_meta)) fit[[iw]]$w_meta <- NULL
-      if(is.null(fit[[iw]]$rho)) fit[[iw]]$rho <- 0
+      # add for backward compatibility
+      if (is.null(fit[[iw]]$method)) fit[[iw]]$method <- "regr"
+      if (is.null(fit[[iw]]$w_additional_covariates)) {
+        fit[[iw]]$w_additional_covariates <- NULL
+      }
+      if (is.null(fit[[iw]]$rho)) fit[[iw]]$rho <- 0
 
 
       # train on all but i-th fold (and use settings from fit):
-      fit_folds[[i]] <- trac(Z[-folds[[i]], ],
-                             y[-folds[[i]]],
-                             A,
-                             X[-folds[[i]], ],
+      fit_folds[[i]] <- trac(Z = Z[-folds[[i]], ],
+                             y = y[-folds[[i]]],
+                             A = A,
+                             additional_covariates =
+                               additional_covariates[-folds[[i]], ],
                              fraclist = fit[[iw]]$fraclist,
                              w = fit[[iw]]$w,
-                             w_meta = fit[[iw]]$w_meta,
+                             w_additional_covariates =
+                               fit[[iw]]$w_additional_covariates,
                              method = fit[[iw]]$method,
                              rho = fit[[iw]]$rho,
                              normalized = fit[[iw]]$normalized)
@@ -62,7 +71,7 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
           (predict_trac(
             fit_folds[[i]],
             Z[folds[[i]], ],
-            X[folds[[i]], ])[[1]] - y[folds[[i]]])^2,
+            additional_covariates[folds[[i]], ])[[1]] - y[folds[[i]]])^2,
           2, summary_function
         )
       }
@@ -72,7 +81,8 @@ cv_trac <- function(fit, Z, y, A, X = NULL, folds = NULL, nfolds = 5,
         # loss: max(0, 1 - y_hat * y)^2
         er <- sign(predict_trac(fit_folds[[i]],
                                 Z[folds[[i]],],
-                                X[folds[[i]],])[[1]]) != c(y[folds[[i]]])
+                                additional_covariates[folds[[i]],])[[1]]) !=
+          c(y[folds[[i]]])
         errs[, i] <- colMeans(er)
       }
     }
