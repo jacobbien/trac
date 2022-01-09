@@ -90,7 +90,7 @@ A <- cbind(A, c(rep(x = 0, times = 2*p/3), rep(x = 1, times = (p/3))))
 A <- cbind(A, rep(x = 1, times = p))
 A_n <- colSums(A)
 
-# add additional covariates
+# add additional covariates: one numerical and one categorical
 X <- data.frame(numeric_feature = rnorm(n = n),
                 categorical_feature = sample(c(0, 1), replace = TRUE,
                                              size = n))
@@ -98,12 +98,12 @@ X <- data.frame(numeric_feature = rnorm(n = n),
 X$categorical_feature <- as.factor(X$categorical_feature)
 
 
-# construct an augmented dataset with the aggregrated levels
+# construct an augmented dataset with the aggregrated levels as geom means
 Z_mod <- Z %*% A
 Z_mod <- t(t(Z_mod) - A_n)
 
 # without intercept
-# build y as the combination of column 4 and 3
+# build y as the combination of column p + 1 and p + 5
 y <- Z_mod[, (p + 1)] - Z_mod[, (p + 5)] + rnorm(n)
 # for classifcation take the sign --> values in c(-1, 1)
 y_classif <- sign(y)
@@ -111,9 +111,15 @@ y_classif <- sign(y)
 
 test_that("trac classification on simulated data", {
   skip_if_no_classo()
-  fit_classif <- trac(Z, y_classif, A, method = "classif", intercept = FALSE)
+  fit_classif <- trac(Z, y_classif, A, method = "classif", intercept = FALSE,
+                      nlam = 30)
+  # recover ground truth
   expect_true(all(fit_classif[[1]]$alpha[, 2][c(p + 1, p + 5)] != 0))
+  # intercept should be 0
   expect_true(all((fit_classif[[1]]$beta0 == 0)))
+  # at most n selected features
+  expect_true(sum(fit_classif[[1]]$alpha[, 30] != 0) < n)
+
 
   fit_huber <- trac(Z, y_classif, A, method = "classif_huber",
                     intercept = FALSE)
@@ -180,6 +186,7 @@ test_that("sparse log contrast regression on simulated data with
     sparse_log_contrast(Z, y, additional_covariates = X,
                         min_frac = 1e-2, nlam = 30)
   expect_true(all(fit_sparse_log_contrast$beta[, 2][c(2, 3)] != 0))
+  expect_true(sum(fit_sparse_log_contrast$beta[, 30] != 0) < n)
   fit_sparse_log_contrast1 <-
     sparse_log_contrast(Z, y, additional_covariates = X,
                         min_frac = 1e-2, nlam = 30, normalized = FALSE)

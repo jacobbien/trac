@@ -1,6 +1,9 @@
-# Transform non compositional input --------------------------------------------
+# Transform non-compositional input --------------------------------------------
 
-#' Functions transform non compositional input
+#' Functions transform non-compositional input
+#'
+#' normalize metadata. (x-mean(x)) / norm(x) for numerical variables and
+#' 0/1 for categorical variables provided as a factor
 #'
 #' @keywords internal
 #' @param additional_covariates new data matrix
@@ -10,16 +13,16 @@
 #' @return list with vector indicating if categorical or not, number of
 #'    categorical variables, vector of means and l2 norm and normalized
 #'    variables
-#' @export
 #'
 
 normalization_additional_covariates <- function(additional_covariates,
                                                 p_x, intercept) {
-  # normalize metadata. (x-mean(x)) / norm(x) for numerical variables
+  # check which variables are categorical and which are not categorical
   categorical_list <- get_categorical_variables(additional_covariates)
   categorical <- categorical_list[["categorical"]]
   n_categorical <- categorical_list[["n_categorical"]]
   n_numeric <- p_x - n_categorical
+  # calculate the mean, mean 0 for models without intercept
   if (!intercept) {
     xm <- rep(0, length = ncol(additional_covariates[, !categorical,
                                                      drop = FALSE]))
@@ -27,8 +30,10 @@ normalization_additional_covariates <- function(additional_covariates,
     xm <- apply(additional_covariates[, !categorical, drop = FALSE], 2,
                 function(x) mean(x))
   }
+  # calculate l2 norm
   xs <- apply(additional_covariates[, !categorical, drop = FALSE], 2,
               function(x) norm(x, type = "2"))
+  # (x-mean(x)) / norm(x)
   additional_covariates[, !categorical] <-
     t((t(additional_covariates[, !categorical, drop = FALSE]) - xm) / xs)
   if (n_numeric == 0) {
@@ -43,6 +48,8 @@ normalization_additional_covariates <- function(additional_covariates,
       sapply(additional_covariates[, categorical, drop = FALSE],
              function(x) x - 1)
   }
+  # return Boolean if categorical , number of numerical inputs, mean vector,
+  # l2 norm vector, transformed additional covariates
   list(categorical = categorical,
        n_numeric = n_numeric,
        xm = xm,
@@ -50,6 +57,17 @@ normalization_additional_covariates <- function(additional_covariates,
        X = additional_covariates)
 }
 
+#' Check if additional variables are categorical
+#'
+#' Check if the additional non-compositional covariates are categorical or not
+#' based on the type of the column. If the column is a binary factor then it is
+#' assumed to be a categorical variable. Useful to transform the input.
+#'
+#' @keywords internal
+#' @param X see \code{additional_covariates} from \code{\link{trac}}
+#' @return list with vector indicating if categorical or not, number of
+#'    categorical variables
+#'
 
 get_categorical_variables <- function(X) {
 # fct to get categorical covariates
@@ -59,13 +77,41 @@ list(categorical = categorical,
      n_categorical = n_categorical)
 }
 
+#' Transform non-compositional categorical input
+#'
+#' Transform factors to numerical values of 0 and 1
+#' @keywords internal
+#' @param X see \code{additional_covariates} from \code{\link{trac}}
+#' @param categorical vector indicating if categorical or not
+#' @return data frame with transformed categorical variables from factor to
+#'    numerical
+#'
+
 transform_categorical_variables <- function(X, categorical) {
   X[, categorical] <- sapply(X[, categorical], as.numeric)
   sapply(X[, categorical], function(x) x - 1)
 }
 
+#' Re-scale betas of normalized variables
+#'
+#' Re-scales betas of the normalized covariates to the original scale for
+#' non-zero betas
+#' @keywords internal
+#' @param beta estimated coefficients
+#' @param p_x count of additional non-compositional covariates
+#' @param p count of compositional covariates
+#' @param n_numeric count of numerical non-compositional covariates
+#' @param categorical boolean vector indicating if the additional
+#'    non-compositional covariates are categorical or not (see
+#'    \code{get_categorical_variables})
+#' @param xs vector l2 norm (see\code{normalization_additional_covariates})
+#' @param xm vector of means (see\code{normalization_additional_covariates})
+#' @return matrix of re-scaled betas
+#' @export
+#'
+
 rescale_betas <- function(beta, p_x, p, n_numeric, categorical, xs, xm) {
-  # rescales the betas to the original scale
+  # re-scales the betas to the original scale
   if (n_numeric > 0) {
     if ((p_x == 1) & (n_numeric == 1)) {
       normalized_zero <- beta[(p + p_x), ] == 0
@@ -83,6 +129,19 @@ rescale_betas <- function(beta, p_x, p, n_numeric, categorical, xs, xm) {
   beta
 }
 
+#' Check non-compositional inputs
+#'
+#' Check if the additional non-compositional inputs have NAs and have the same
+#' number of observations as the compositional inputs
+#' @keywords internal
+#' @param additional_covariates new data matrix
+#'    (see \code{additional_covariates} from \code{\link{trac}})
+#' @param n number of observations
+#' @param w_additional_covariates weights for the estimation of the coefficients
+#' @param p_x vector with number of additional non-compositional covariates
+#' @return errors if the requirements are not met
+#' @export
+#'
 
 
 check_additional_covariates <-
@@ -98,10 +157,11 @@ check_additional_covariates <-
         sep = " "
       ))
     }
+    # Weight vector needs to be the same length as the number of covariates
     if (!is.vector(w_additional_covariates)) {
       stop("w_additional_covariates must be a matrix or a vector.")
     }
-    if (length(additional_covariates) != p_x) {
+    if (length(w_additional_covariates) != p_x) {
       stop("w_additional_covariates must be
            of length ncol(additional_covariates)")
     }
@@ -109,6 +169,22 @@ check_additional_covariates <-
 
 
 # Check Input for classification -----------------------------------------------
+
+#' Check method input and other hyperparameter
+#'
+#' Check if the method input and other hyperparameter for classification
+#' are correctly specified
+#'
+#' @keywords internal
+#' @param method The method (see \code{method}
+#'     from \code{\link{trac}})
+#' @param y The outcome (see \code{y}
+#'     from \code{\link{trac}})
+#' @param rho The hyperparameter for huberized loss for classification
+#'     (see \code{rho}from \code{\link{trac}})
+#' @return list with vector indicating which method is used and the outcome
+#' @export
+#'
 
 check_method <- function(method, y, rho = 0.0) {
   # check the inputs for classification tasks
@@ -119,6 +195,7 @@ check_method <- function(method, y, rho = 0.0) {
                sep = " "
     ))
   }
+  # If the outcome is binary warn the user
   if (length(unique(y)) == 2 & method == "regr") {
     warning("this looks like a classification task, check the method argument")
   }
@@ -129,9 +206,11 @@ check_method <- function(method, y, rho = 0.0) {
   } else {
     classification <- FALSE
   }
+  # The response variable should be binary for classification
   if (length(unique(y)) != 2 & classification) {
     stop("the response variable should be binary for the classification task")
   }
+  # Transform the output for classification to 1, -1 if not done yet
   if (!all(unique(y) %in% c(-1, 1)) & classification) {
     warning(paste(
       "values of y must be -1 and 1 for classification.",
@@ -153,22 +232,44 @@ check_method <- function(method, y, rho = 0.0) {
 
 # Get probabilistic output of raw score ----------------------------------------
 
+#' 5-fold cross-validation to find the optimal parameters A and B
+#' for probabilistic output. Obtain the decision values and pass to the platt
+#' algorithm for each lambda
+#'
+#' @keywords internal
+#' @param Z same arguments as passed to \code{\link{trac}}
+#' @param additional_covariates same arguments as passed to \code{\link{trac}}
+#' @param A same arguments as passed to \code{\link{trac}}
+#' @param y same arguments as passed to \code{\link{trac}}
+#' @param method same arguments as passed to \code{\link{trac}}
+#' @param w same arguments as passed to \code{\link{trac}}
+#' @param w_additional_covariates same arguments as passed to \code{\link{trac}}
+#' @param fraclist same arguments as passed to \code{\link{trac}}
+#' @param nfolds number of folds
+#' @param eps convergence criterion
+#' @param n_lambda number of lambdas
+#' @return matrix with hyperparameter A and B as columns
+#' @export
+#'
+
 get_probability_cv <- function(Z, additional_covariates, A, y, method, w,
                                w_additional_covariates, fraclist,
                                nfolds = 5, eps, n_lambda) {
-  # calculate the hyperparameter for platts method. Do three fold cv
-  # to obtain the decision values and pass to the platt algorithm for each
-  # lambda
+  # check additional covariates and number of observations
   n <- nrow(Z)
   if (!is.null(additional_covariates)) {
     if (!is.data.frame(additional_covariates)) {
       additional_covariates <- data.frame(additional_covariates)
     }
   }
+  # create folds
   folds <- ggb:::make_folds(n, nfolds)
+  # pre-create matrix with decision values
   decision_values <- matrix(ncol = n_lambda)
   label <- c()
+  # run cv
   for (i in seq(nfolds)) {
+    # fit model
     fit_folds <- trac(Z[-folds[[i]], ],
                       y[-folds[[i]]],
                       A,
@@ -178,14 +279,18 @@ get_probability_cv <- function(Z, additional_covariates, A, y, method, w,
                       w_additional_covariates = w_additional_covariates,
                       method = method,
                       output = "raw")
+    # run prediction
     decision_value <- predict_trac(fit_folds, Z[folds[[i]], ],
                                    additional_covariates[folds[[i]], ])[[1]]
+    # add the prediction value to the matrix
     decision_values <- rbind(decision_values, decision_value)
+    # extract labels
     label <- c(label, c(y[folds[[i]]]))
   }
   decision_values <- decision_values[-1, ]
   hyper_prob <- matrix(nrow = 2, ncol = n_lambda)
   for (i in seq_len(ncol(decision_values))) {
+    # run platt probability algorithm to get A and B
     hyper_tmp <- get_probability_platt(decision_values = decision_values[, i],
                                        label = label, eps = eps)
     hyper_prob[1, i] <- hyper_tmp$A
@@ -194,13 +299,25 @@ get_probability_cv <- function(Z, additional_covariates, A, y, method, w,
   hyper_prob
 }
 
+#' Calculate parameters A and B based on Platt
+#'
+#' This algorithm is based on the pseudo-code of
+#  Lin, H. T., Lin, C. J., & Weng, R. C. (2007). A note on Platt’s
+#  probabilistic outputs for support vector machines. Machine learning,
+#  68(3), 267-276.
+#  Appendix 3 Pseudo code of Algorithm 1 of the paper
+#'
+#' @keywords internal
+#' @param decision_values output score of trac for classification
+#'    (see \code{y} from \code{\link{trac}})
+#' @param label labels see \code{y} from \code{\link{trac}}
+#' @param eps threshold for convergence
+#' @return A and B
+#' @export
+#'
+
 
 get_probability_platt <- function(decision_values, label, eps) {
-  # This algorithm is based on the pseudo-code of
-  # Lin, H. T., Lin, C. J., & Weng, R. C. (2007). A note on Platt’s
-  # probabilistic outputs for support vector machines. Machine learning,
-  # 68(3), 267-276.
-  # Appendix 3 Pseudo code of Algorithm 1 of the paper
 
   # Parameter setting
   max_iter <- 100
@@ -299,11 +416,24 @@ get_probability_platt <- function(decision_values, label, eps) {
        B = B)
 }
 
+#' Transform the score output to probabilistic output
+#'
+#' following the idea of Chapter 3.2 of
+#  Lin, H. T., Lin, C. J., & Weng, R. C. (2007). A note on Platt’s
+#  probabilistic outputs for support vector machines.
+#  Machine learning, 68(3), 267-276.
+#'
+#' @keywords internal
+#' @param yhat score based on the output of trac
+#'    (see \code{y} from \code{\link{trac}})
+#' @param A Hyperparameter for probabilistic transformation
+#' @param B Hyperparameter for probabilistic transformation
+#' @return Probabilistic output
+#' @export
+#'
+
 probability_transform <- function(yhat, A, B) {
-  # following the idea of Chapter 3.2 of
-  # Lin, H. T., Lin, C. J., & Weng, R. C. (2007). A note on Platt’s
-  # probabilistic outputs for support vector machines.
-  # Machine learning, 68(3), 267-276.
+
 
   fApB <- t(A * t(yhat) + B)
   fApB_index <- fApB >= 0
