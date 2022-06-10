@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,37 +33,37 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">trac</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/trac-classification-pipeline.html">trac classification pipeline</a>
+    </li>
+    <li>
       <a href="../articles/trac-example.html">Using `trac` to build tree-aggregated predictive models</a>
+    </li>
+    <li>
+      <a href="../articles/trac-installation.html">Installation</a>
     </li>
   </ul>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/jacobbien/trac/">
+  <a href="https://github.com/jacobbien/trac/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -76,13 +78,14 @@
 
       
 
-      </header><script src="trac-example_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Using <code>trac</code> to build tree-aggregated predictive models</h1>
+      <h1 data-toc-skip>Using <code>trac</code> to build tree-aggregated
+predictive models</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/jacobbien/trac/blob/master/vignettes/trac-example.Rmd"><code>vignettes/trac-example.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/jacobbien/trac/blob/HEAD/vignettes/trac-example.Rmd" class="external-link"><code>vignettes/trac-example.Rmd</code></a></small>
       <div class="hidden name"><code>trac-example.Rmd</code></div>
 
     </div>
@@ -92,59 +95,92 @@
 <!--
 To knit this vignette, I ran the following within an R console:
 
-knitr::knit("trac-example.Rmd.orig", output = "trac-example.Rmd")
+knitr::knit("trac-installation.Rmd.orig", output = "trac-installation.Rmd")
 
 -->
-<p>In this vignette, we demonstrate the basic usage of the <code>trac</code> package, which implements the methodology from <a href="https://www.biorxiv.org/content/10.1101/2020.09.01.277632v1.full">Tree-Aggregated Predictive Modeling of Microbiome Data</a>. We use the Gut (HIV) data set, one of the main examples in the paper, which is included in the <code>trac</code> package as <code>sCD14</code>. For more on this data set, see <code><a href="../reference/sCD14.html">?sCD14</a></code>.</p>
-<p>The <code>trac</code> package assumes that you want to predict some response variable based on amplicon data<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>, where the amplicons are structured on a tree.</p>
+<p>In this vignette, we demonstrate the basic usage of the
+<code>trac</code> package, which implements the methodology from <a href="https://www.biorxiv.org/content/10.1101/2020.09.01.277632v1.full" class="external-link">Tree-Aggregated
+Predictive Modeling of Microbiome Data</a>. We use the Gut (HIV) data
+set, one of the main examples in the paper, which is included in the
+<code>trac</code> package as <code>sCD14</code>. For more on this data
+set, see <code><a href="../reference/sCD14.html">?sCD14</a></code>.</p>
+<p>The <code>trac</code> package assumes that you want to predict some
+response variable based on amplicon data<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>, where the amplicons
+are structured on a tree.</p>
 <p>To apply <code>trac</code>, one needs three things:</p>
 <ol style="list-style-type: decimal">
-<li><p>A response vector <code>y</code> of length <code>n</code>, where <code>n</code> is the number of samples.</p></li>
-<li><p>A <code>n</code>-by-<code>p</code> data matrix <code>x</code>, where <code>p</code> is the number of leaves (i.e., the number of taxa at the base level, which in this example is the OTU level).</p></li>
-<li><p>A binary matrix <code>A</code> with <code>p</code> rows and a column for each non-root node of the tree. In particular, element <code>A[j,u]</code> indicates whether leaf <code>j</code> has ancestor <code>u</code>.</p></li>
+<li><p>A response vector <code>y</code> of length <code>n</code>, where
+<code>n</code> is the number of samples.</p></li>
+<li><p>A <code>n</code>-by-<code>p</code> data matrix <code>x</code>,
+where <code>p</code> is the number of leaves (i.e., the number of taxa
+at the base level, which in this example is the OTU level).</p></li>
+<li><p>A binary matrix <code>A</code> with <code>p</code> rows and a
+column for each non-root node of the tree. In particular, element
+<code>A[j,u]</code> indicates whether leaf <code>j</code> has ancestor
+<code>u</code>.</p></li>
 </ol>
-<p>A look at the <code>sCD14</code> data object reveals that it has these three elements in addition to two other objects:</p>
+<p>A look at the <code>sCD14</code> data object reveals that it has
+these three elements in addition to two other objects:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jacobbien.github.io/trac">trac</a></span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">sCD14</span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jacobbien.github.io/trac" class="external-link">trac</a></span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sCD14</span><span class="op">)</span>
 <span class="co">#&gt; [1] "y"    "x"    "tree" "tax"  "A"</span></code></pre></div>
-<p>The object <code>tree</code> is of class <code>phylo</code> and is useful for plotting. The object of class <code>tax</code> is convenient for seeing the ancestor taxa of a leaf.</p>
-<p>If you are starting with a <code>phyloseq</code> object, you can use the functions <code>tax_table_to_phylo</code> and <code>phylo_to_A</code> to form the <code>tree</code> and <code>A</code> objects. See <a href="">here</a> for a demonstration of this workflow (which describes details of how to handle unclassified taxa and data sets with multiple kingdoms).</p>
-<div id="set-up-traintest-splits-and-take-logarithm" class="section level3">
-<h3 class="hasAnchor">
-<a href="#set-up-traintest-splits-and-take-logarithm" class="anchor"></a>Set up train/test splits and take logarithm</h3>
-<p>Let’s start by splitting the data into a train and test set. We’ll take 2/3 of the observations for training.</p>
+<p>The object <code>tree</code> is of class <code>phylo</code> and is
+useful for plotting. The object of class <code>tax</code> is convenient
+for seeing the ancestor taxa of a leaf.</p>
+<p>If you are starting with a <code>phyloseq</code> object, you can use
+the functions <code>tax_table_to_phylo</code> and
+<code>phylo_to_A</code> to form the <code>tree</code> and <code>A</code>
+objects. See <a href="">here</a> for a demonstration of this workflow
+(which describes details of how to handle unclassified taxa and data
+sets with multiple kingdoms).</p>
+<div class="section level3">
+<h3 id="set-up-traintest-splits-and-take-logarithm">Set up train/test splits and take logarithm<a class="anchor" aria-label="anchor" href="#set-up-traintest-splits-and-take-logarithm"></a>
+</h3>
+<p>Let’s start by splitting the data into a train and test set. We’ll
+take 2/3 of the observations for training.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span>
-<span class="va">ntot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">sCD14</span><span class="op">$</span><span class="va">y</span><span class="op">)</span>
-<span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">2</span><span class="op">/</span><span class="fl">3</span> <span class="op">*</span> <span class="va">ntot</span><span class="op">)</span>
-<span class="va">tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">ntot</span>, <span class="va">n</span><span class="op">)</span></code></pre></div>
-<p>Since <code>trac</code> operates in the log-contrast framework, we take the log of the feature matrix.</p>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span>
+<span class="va">ntot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sCD14</span><span class="op">$</span><span class="va">y</span><span class="op">)</span>
+<span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">2</span><span class="op">/</span><span class="fl">3</span> <span class="op">*</span> <span class="va">ntot</span><span class="op">)</span>
+<span class="va">tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">ntot</span>, <span class="va">n</span><span class="op">)</span></code></pre></div>
+<p>Since <code>trac</code> operates in the log-contrast framework, we
+take the log of the feature matrix.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">log_pseudo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">pseudo_count</span> <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">x</span> <span class="op">+</span> <span class="va">pseudo_count</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">log_pseudo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">pseudo_count</span> <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">x</span> <span class="op">+</span> <span class="va">pseudo_count</span><span class="op">)</span>
 <span class="va">ytr</span> <span class="op">&lt;-</span> <span class="va">sCD14</span><span class="op">$</span><span class="va">y</span><span class="op">[</span><span class="va">tr</span><span class="op">]</span>
 <span class="va">yte</span> <span class="op">&lt;-</span> <span class="va">sCD14</span><span class="op">$</span><span class="va">y</span><span class="op">[</span><span class="op">-</span><span class="va">tr</span><span class="op">]</span>
 <span class="va">ztr</span> <span class="op">&lt;-</span> <span class="fu">log_pseudo</span><span class="op">(</span><span class="va">sCD14</span><span class="op">$</span><span class="va">x</span><span class="op">[</span><span class="va">tr</span>, <span class="op">]</span><span class="op">)</span>
 <span class="va">zte</span> <span class="op">&lt;-</span> <span class="fu">log_pseudo</span><span class="op">(</span><span class="va">sCD14</span><span class="op">$</span><span class="va">x</span><span class="op">[</span><span class="op">-</span><span class="va">tr</span>, <span class="op">]</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="apply-trac" class="section level3">
-<h3 class="hasAnchor">
-<a href="#apply-trac" class="anchor"></a>Apply trac</h3>
-<p>We now solve the <code>trac</code> optimization problem using a path algorithm (implemented in the <a href="https://c-lasso.readthedocs.io/en/latest/">c-lasso</a> Python package). The function <code>trac</code> returns the solutions for a grid of values of the tuning parameter <span class="math inline">\(\lambda\)</span>. The grid’s minimal value and number of points are controlled by <code>min_frac</code> and <code>nlam</code>, respectively.</p>
+<div class="section level3">
+<h3 id="apply-trac">Apply trac<a class="anchor" aria-label="anchor" href="#apply-trac"></a>
+</h3>
+<p>We now solve the <code>trac</code> optimization problem using a path
+algorithm (implemented in the <a href="https://c-lasso.readthedocs.io/en/latest/" class="external-link">c-lasso</a> Python
+package). The function <code>trac</code> returns the solutions for a
+grid of values of the tuning parameter <span class="math inline">\(\lambda\)</span>. The grid’s minimal value and
+number of points are controlled by <code>min_frac</code> and
+<code>nlam</code>, respectively.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trac.html">trac</a></span><span class="op">(</span><span class="va">ztr</span>, <span class="va">ytr</span>, A <span class="op">=</span> <span class="va">sCD14</span><span class="op">$</span><span class="va">A</span>, min_frac <span class="op">=</span> <span class="fl">1e-2</span>, nlam <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></code></pre></div>
-<p>By default, <code>trac</code> gives us the model known as “trac (a=1)” in the <a href="https://www.biorxiv.org/content/10.1101/2020.09.01.277632v1.full">paper</a>. For other choices of weights, see the section on weights below.</p>
+<p>By default, <code>trac</code> gives us the model known as “trac
+(a=1)” in the <a href="https://www.biorxiv.org/content/10.1101/2020.09.01.277632v1.full" class="external-link">paper</a>.
+For other choices of weights, see the section on weights below.</p>
 </div>
-<div id="looking-at-the-trac-output" class="section level3">
-<h3 class="hasAnchor">
-<a href="#looking-at-the-trac-output" class="anchor"></a>Looking at the <code>trac</code> output</h3>
-<p>We can look at the trac regularization path. By default, the function <code>plot_trac_path</code> shows the <code>alpha</code> coefficients.</p>
+<div class="section level3">
+<h3 id="looking-at-the-trac-output">Looking at the <code>trac</code> output<a class="anchor" aria-label="anchor" href="#looking-at-the-trac-output"></a>
+</h3>
+<p>We can look at the trac regularization path. By default, the function
+<code>plot_trac_path</code> shows the <code>alpha</code>
+coefficients.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot_trac_path.html">plot_trac_path</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="plot_trac_path_alpha-1.png" alt=""><p class="caption">plot of chunk plot_trac_path_alpha</p>
 </div>
-<p>There is an <code>alpha</code> coefficient corresponding to each node of the tree. For example, early in the path we have the following:</p>
+<p>There is an <code>alpha</code> coefficient corresponding to each node
+of the tree. For example, early in the path we have the following:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">show_nonzeros</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">[</span><span class="va">x</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">]</span>
 <span class="fu">show_nonzeros</span><span class="op">(</span><span class="va">fit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">alpha</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span><span class="op">)</span>
@@ -152,19 +188,24 @@ knitr::knit("trac-example.Rmd.orig", output = "trac-example.Rmd")
 <span class="co">#&gt;                                                               306.4128 </span>
 <span class="co">#&gt; Life::Bacteria::Firmicutes::Clostridia::Clostridiales::Lachnospiraceae </span>
 <span class="co">#&gt;                                                              -306.4128</span></code></pre></div>
-<p>We can also plot the <code>beta</code> values (coefficients corresponding to the leaf taxa):</p>
+<p>We can also plot the <code>beta</code> values (coefficients
+corresponding to the leaf taxa):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot_trac_path.html">plot_trac_path</a></span><span class="op">(</span><span class="va">fit</span>, coef <span class="op">=</span> <span class="st">"beta"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="plot_trac_path_beta-1.png" alt=""><p class="caption">plot of chunk plot_trac_path_beta</p>
 </div>
-<p>We see that as the amount of regularization increases, the individual <code>beta</code> coefficients tend to fuse together (corresponding to the aggregation of taxa induced by the trac regularizer).</p>
-<p>Next, we would like to select a value of the tuning parameter. We do so using cross validation.</p>
+<p>We see that as the amount of regularization increases, the individual
+<code>beta</code> coefficients tend to fuse together (corresponding to
+the aggregation of taxa induced by the trac regularizer).</p>
+<p>Next, we would like to select a value of the tuning parameter. We do
+so using cross validation.</p>
 </div>
-<div id="cross-validate-trac-to-choose-tuning-parameter" class="section level3">
-<h3 class="hasAnchor">
-<a href="#cross-validate-trac-to-choose-tuning-parameter" class="anchor"></a>Cross validate trac to choose tuning parameter</h3>
-<p>The function <code>cv_trac</code> by default performs 5-fold cross validation.</p>
+<div class="section level3">
+<h3 id="cross-validate-trac-to-choose-tuning-parameter">Cross validate trac to choose tuning parameter<a class="anchor" aria-label="anchor" href="#cross-validate-trac-to-choose-tuning-parameter"></a>
+</h3>
+<p>The function <code>cv_trac</code> by default performs 5-fold cross
+validation.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">cvfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv_trac.html">cv_trac</a></span><span class="op">(</span><span class="va">fit</span>, Z <span class="op">=</span> <span class="va">ztr</span>, y <span class="op">=</span> <span class="va">ytr</span>, A <span class="op">=</span> <span class="va">sCD14</span><span class="op">$</span><span class="va">A</span><span class="op">)</span>
 <span class="co">#&gt; fold 1</span>
@@ -178,61 +219,86 @@ knitr::knit("trac-example.Rmd.orig", output = "trac-example.Rmd")
 <div class="figure">
 <img src="plot_cv-1.png" alt=""><p class="caption">plot of chunk plot_cv</p>
 </div>
-<p>The two vertical lines show us the minimum of the CV curve and the “1 SE rule” solution.</p>
+<p>The two vertical lines show us the minimum of the CV curve and the “1
+SE rule” solution.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">cvfit</span><span class="op">$</span><span class="va">cv</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">ibest</span>
 <span class="co">#&gt; [1] 20</span>
 <span class="va">cvfit</span><span class="op">$</span><span class="va">cv</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">i1se</span>
 <span class="co">#&gt; [1] 8</span></code></pre></div>
-<p>Using the 1SE rule results in the following nonzero <code>alpha</code> coefficients.</p>
+<p>Using the 1SE rule results in the following nonzero
+<code>alpha</code> coefficients.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">show_nonzeros</span><span class="op">(</span><span class="va">fit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">alpha</span><span class="op">[</span>, <span class="va">cvfit</span><span class="op">$</span><span class="va">cv</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">i1se</span><span class="op">]</span><span class="op">)</span>
 <span class="co">#&gt;                                                         Life::Bacteria::Actinobacteria </span>
-<span class="co">#&gt;                                                                              -501.4344 </span>
+<span class="co">#&gt;                                                                              -501.4342 </span>
 <span class="co">#&gt; Life::Bacteria::Bacteroidetes::Bacteroidia::Bacteroidales::Bacteroidaceae::Bacteroides </span>
 <span class="co">#&gt;                                                                               286.8039 </span>
 <span class="co">#&gt;                 Life::Bacteria::Firmicutes::Clostridia::Clostridiales::Ruminococcaceae </span>
-<span class="co">#&gt;                                                                              2221.7521 </span>
+<span class="co">#&gt;                                                                              2221.7522 </span>
 <span class="co">#&gt;                 Life::Bacteria::Firmicutes::Clostridia::Clostridiales::Lachnospiraceae </span>
-<span class="co">#&gt;                                                                             -1644.8563 </span>
+<span class="co">#&gt;                                                                             -1644.8562 </span>
 <span class="co">#&gt;                                                                         Life::Bacteria </span>
-<span class="co">#&gt;                                                                              -362.2653</span></code></pre></div>
+<span class="co">#&gt;                                                                              -362.2657</span></code></pre></div>
 </div>
-<div id="making-predictions" class="section level3">
-<h3 class="hasAnchor">
-<a href="#making-predictions" class="anchor"></a>Making predictions</h3>
-<p>We can apply our <code>trac</code> model to make predictions on the test set and compute the mean squared error on the test set.</p>
+<div class="section level3">
+<h3 id="making-predictions">Making predictions<a class="anchor" aria-label="anchor" href="#making-predictions"></a>
+</h3>
+<p>We can apply our <code>trac</code> model to make predictions on the
+test set and compute the mean squared error on the test set.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">yhat_te</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/predict_trac.html">predict_trac</a></span><span class="op">(</span><span class="va">fit</span>, new_Z <span class="op">=</span> <span class="va">zte</span><span class="op">)</span>
-<span class="va">testerr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">yhat_te</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">-</span> <span class="va">yte</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>
-<span class="va">nnz</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colSums</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">alpha</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span></code></pre></div>
-<p>And we can make a plot of the test error as a function of the number of non-zero <code>alpha</code> coefficients.</p>
+<span class="va">testerr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">yhat_te</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">-</span> <span class="va">yte</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>
+<span class="va">nnz</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colSums</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">alpha</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span></code></pre></div>
+<p>And we can make a plot of the test error as a function of the number
+of non-zero <code>alpha</code> coefficients.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
-<span class="fu">tibble</span><span class="op">(</span>nnz <span class="op">=</span> <span class="va">nnz</span>, testerr <span class="op">=</span> <span class="va">testerr</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">nnz</span>, y <span class="op">=</span> <span class="va">testerr</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">nnz</span><span class="op">[</span><span class="va">cvfit</span><span class="op">$</span><span class="va">cv</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">i1se</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>nnz <span class="op">=</span> <span class="va">nnz</span>, testerr <span class="op">=</span> <span class="va">testerr</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">nnz</span>, y <span class="op">=</span> <span class="va">testerr</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">nnz</span><span class="op">[</span><span class="va">cvfit</span><span class="op">$</span><span class="va">cv</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">i1se</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="plot_trac_testerr-1.png" alt=""><p class="caption">plot of chunk plot_trac_testerr</p>
 </div>
 </div>
-<div id="weights" class="section level3">
-<h3 class="hasAnchor">
-<a href="#weights" class="anchor"></a>Weights</h3>
-<p>The user can specify any set of node-specific weights in the penalty. As described in the trac paper, a straightforward choice is to take a power of the number of leaves under that node:</p>
+<div class="section level3">
+<h3 id="weights">Weights<a class="anchor" aria-label="anchor" href="#weights"></a>
+</h3>
+<p>The user can specify any set of node-specific weights in the penalty.
+As described in the trac paper, a straightforward choice is to take a
+power of the number of leaves under that node:</p>
 <p><span class="math display">\[
 w_u=|L_u|^{-a}.
-\]</span> With apologies to the user, the weights notation is overloaded, which means that the notation <code>w</code> in the function <code>trac</code> and the <span class="math inline">\(w\)</span> referred to in the paper are different from each other in a way we explain now. In the package, the weights <code>w</code> refer to the weights on the trac optimization problem parameterized in terms of <code>gamma</code> whereas in the paper’s equation (2), <span class="math inline">\(w\)</span> refers to the weights on the trac optimization problem parameterized in terms of <code>alpha</code>. As explained in the appendix of the paper, <span class="math inline">\(\alpha_u=\gamma_u\cdot|L_u|\)</span>. This means that the weights we use in the package should be taken to be <code>|L_u|</code> times larger than what they are in the paper.</p>
-<p>Thus, when the paper writes “trac (a=1)”, this corresponds to the <code>trac</code> function getting an input <code>w</code> of all ones (which is the default). When the paper writes “trac (a=1/2)”, this corresponds to the <code>trac</code> function called as follows:</p>
+\]</span> With apologies to the user, the weights notation is
+overloaded, which means that the notation <code>w</code> in the function
+<code>trac</code> and the <span class="math inline">\(w\)</span>
+referred to in the paper are different from each other in a way we
+explain now. In the package, the weights <code>w</code> refer to the
+weights on the trac optimization problem parameterized in terms of
+<code>gamma</code> whereas in the paper’s equation (2), <span class="math inline">\(w\)</span> refers to the weights on the trac
+optimization problem parameterized in terms of <code>alpha</code>. As
+explained in the appendix of the paper, <span class="math inline">\(\alpha_u=\gamma_u\cdot|L_u|\)</span>. This means
+that the weights we use in the package should be taken to be
+<code>|L_u|</code> times larger than what they are in the paper.</p>
+<p>Thus, when the paper writes “trac (a=1)”, this corresponds to the
+<code>trac</code> function getting an input <code>w</code> of all ones
+(which is the default). When the paper writes “trac (a=1/2)”, this
+corresponds to the <code>trac</code> function called as follows:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trac.html">trac</a></span><span class="op">(</span><span class="va">ztr</span>, <span class="va">ytr</span>, A <span class="op">=</span> <span class="va">sCD14</span><span class="op">$</span><span class="va">A</span>, min_frac <span class="op">=</span> <span class="fl">1e-2</span>,
-             nlam <span class="op">=</span> <span class="fl">30</span>, w <span class="op">=</span> <span class="fu">Matrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html">colSums</a></span><span class="op">(</span><span class="va">sCD14</span><span class="op">$</span><span class="va">A</span><span class="op">)</span><span class="op">^</span><span class="fl">0.5</span><span class="op">)</span></code></pre></div>
+             nlam <span class="op">=</span> <span class="fl">30</span>, w <span class="op">=</span> <span class="fu">Matrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">colSums</a></span><span class="op">(</span><span class="va">sCD14</span><span class="op">$</span><span class="va">A</span><span class="op">)</span><span class="op">^</span><span class="fl">0.5</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="other-base-levels" class="section level3">
-<h3 class="hasAnchor">
-<a href="#other-base-levels" class="anchor"></a>Other base levels</h3>
-<p>The <code>trac</code> package can perform its flexible and data-adaptive aggregation starting from any base level of aggregation. In the above, we started with OTU-level data on the leaves of the tree. However, some users may prefer to first aggregate to a fixed level by summing all counts within a certain taxonomic level. For example, we could start by aggregating to the family level before applying <code>trac</code>:</p>
+<div class="section level3">
+<h3 id="other-base-levels">Other base levels<a class="anchor" aria-label="anchor" href="#other-base-levels"></a>
+</h3>
+<p>The <code>trac</code> package can perform its flexible and
+data-adaptive aggregation starting from any base level of aggregation.
+In the above, we started with OTU-level data on the leaves of the tree.
+However, some users may prefer to first aggregate to a fixed level by
+summing all counts within a certain taxonomic level. For example, we
+could start by aggregating to the family level before applying
+<code>trac</code>:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">sCD14_family</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aggregate_to_level.html">aggregate_to_level</a></span><span class="op">(</span><span class="va">sCD14</span><span class="op">$</span><span class="va">x</span>, <span class="va">sCD14</span><span class="op">$</span><span class="va">y</span>, <span class="va">sCD14</span><span class="op">$</span><span class="va">A</span>, <span class="va">sCD14</span><span class="op">$</span><span class="va">tax</span>, level <span class="op">=</span> <span class="fl">6</span>, collapse <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p>We can now proceed as before</p>
@@ -242,9 +308,9 @@ w_u=|L_u|^{-a}.
                    <span class="va">sCD14_family</span><span class="op">$</span><span class="va">A</span>,
                    min_frac <span class="op">=</span> <span class="fl">1e-2</span>, nlam <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="sparse-log-contrast" class="section level3">
-<h3 class="hasAnchor">
-<a href="#sparse-log-contrast" class="anchor"></a>Sparse Log-Contrast</h3>
+<div class="section level3">
+<h3 id="sparse-log-contrast">Sparse Log-Contrast<a class="anchor" aria-label="anchor" href="#sparse-log-contrast"></a>
+</h3>
 <p>One can also fit sparse log-contrast models in <code>trac</code>.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit_slc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sparse_log_contrast.html">sparse_log_contrast</a></span><span class="op">(</span><span class="va">ztr</span>, <span class="va">ytr</span>, min_frac <span class="op">=</span> <span class="fl">1e-2</span>, nlam <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></code></pre></div>
@@ -255,19 +321,19 @@ w_u=|L_u|^{-a}.
 <span class="co">#&gt; fold 3</span>
 <span class="co">#&gt; fold 4</span>
 <span class="co">#&gt; fold 5</span>
-<span class="va">yhat_te_slc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/predict_trac.html">predict_trac</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">fit_slc</span><span class="op">)</span>, new_Z <span class="op">=</span> <span class="va">zte</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>
-<span class="va">testerr_slc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">yhat_te_slc</span> <span class="op">-</span> <span class="va">yte</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>
-<span class="va">nnz_slc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colSums</a></span><span class="op">(</span><span class="va">fit_slc</span><span class="op">$</span><span class="va">beta</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span></code></pre></div>
+<span class="va">yhat_te_slc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/predict_trac.html">predict_trac</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fit_slc</span><span class="op">)</span>, new_Z <span class="op">=</span> <span class="va">zte</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>
+<span class="va">testerr_slc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">yhat_te_slc</span> <span class="op">-</span> <span class="va">yte</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>
+<span class="va">nnz_slc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colSums</a></span><span class="op">(</span><span class="va">fit_slc</span><span class="op">$</span><span class="va">beta</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">tibble</span><span class="op">(</span>nnz <span class="op">=</span> <span class="va">nnz_slc</span>, testerr <span class="op">=</span> <span class="va">testerr_slc</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">nnz</span>, y <span class="op">=</span> <span class="va">testerr</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">nnz</span><span class="op">[</span><span class="va">cvfit</span><span class="op">$</span><span class="va">cv</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">i1se</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>nnz <span class="op">=</span> <span class="va">nnz_slc</span>, testerr <span class="op">=</span> <span class="va">testerr_slc</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">nnz</span>, y <span class="op">=</span> <span class="va">testerr</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">nnz_slc</span><span class="op">[</span><span class="va">cvfit</span><span class="op">$</span><span class="va">cv</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">i1se</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="plot_slc_testerr-1.png" alt=""><p class="caption">plot of chunk plot_slc_testerr</p>
 </div>
 </div>
-<div class="footnotes">
+<div class="footnotes footnotes-end-of-document">
 <hr>
 <ol>
 <li id="fn1"><p>or more generally any kind of compositional data<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
@@ -284,11 +350,13 @@ w_u=|L_u|^{-a}.
 
 
       <footer><div class="copyright">
-  <p>Developed by Jacob Bien, Christian Mueller, Xiaohan Yan.</p>
+  <p></p>
+<p>Developed by Jacob Bien, Christian Mueller, Xiaohan Yan.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer>
@@ -296,6 +364,8 @@ w_u=|L_u|^{-a}.
 
   
 
+
+  
 
   </body>
 </html>

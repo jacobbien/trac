@@ -52,7 +52,6 @@ sparse_log_contrast <- function(Z, y, additional_covariates = NULL,
   n <- length(y)
   stopifnot(nrow(Z) == n)
   p <- ncol(Z)
-
   if (is.null(C)) C <- matrix(1, nrow = 1, ncol = p)
 
   # check method
@@ -193,13 +192,13 @@ sparse_log_contrast <- function(Z, y, additional_covariates = NULL,
   lambda_classo <- prob$model_selection$PATHparameters$lambdas
   if (!classification) beta0 <- ybar - crossprod(beta[1:p, ], v)
   if (!intercept) beta0 <- rep(0, times = length(lambda_classo))
-  rownames(beta) <- colnames(Z)
+
 
   if (!classification) intercept <- TRUE
 
   if (!is.null(additional_covariates)) {
     if (!is.null(colnames(Z)) & !is.null( colnames(additional_covariates))) {
-      rownames(beta) <- c(rownames(A), colnames(additional_covariates))
+      rownames(beta) <- c(colnames(Z), colnames(additional_covariates))
     }
     if (normalized && (normalized_values$n_numeric != 0)) {
       # rescale betas for numerical values
@@ -214,11 +213,13 @@ sparse_log_contrast <- function(Z, y, additional_covariates = NULL,
         xm = normalized_values$xm
       )
     }
+  } else {
+    rownames(beta)[1:p] <- colnames(Z)
   }
 
   list(beta0 = beta0,
        beta = beta,
-       C = C,
+       C = C_x,
        fraclist = lambda_classo, # / (2 * n),
        fit_classo = prob,
        refit = FALSE,

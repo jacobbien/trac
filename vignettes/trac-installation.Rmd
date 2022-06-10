@@ -1,0 +1,87 @@
+---
+title: "Installation"
+output: rmarkdown::html_vignette
+bibliography: bib.bib
+vignette: >
+  %\VignetteIndexEntry{Installation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<!--
+To knit this vignette, I ran the following within an R console:
+
+knitr::knit("trac-example.Rmd.orig", output = "trac-example.Rmd")
+
+-->
+
+
+
+# Installation
+
+trac internally uses the c-lasso solver [@Simpson2021] implemented in Python and reticulate to call c-lasso in R.
+
+
+```r
+# install.packages("reticulate")
+library(reticulate)
+```
+
+# Python
+
+## Install c-lasso within R with reticulate
+
+### Install Miniconda
+
+If you are not sure if you have python 3.6 (or later) installed use the following code. If there is no installation of Python you will be asked to install Miniconda and guided through the console.
+
+
+```r
+py_config()
+```
+
+If know you do not have python installed install Miniconda and Python 3.6.3 with:
+
+
+```r
+install_miniconda()
+```
+
+Alternatively consider following the instruction of the [Miniconda installation](https://docs.conda.io/en/latest/miniconda.html) page.
+
+### Install c-lasso
+
+First we need to install the dependencies of c-lasso, namely numpy [@harris2020array], scipy [@virtanen2020scipy], matplotlib [@hunter2007matplotlib] and pandas [@mckinney-proc-scipy-2010]. Afterwards we can install c-lasso.
+
+
+```r
+conda_install(packages = c("numpy", "scipy", "matplotlib", "pandas"))
+conda_install(packages = "c-lasso", pip = TRUE)
+```
+
+## Install c-lasso within the terminal
+
+Install numpy, scipy, matplotlib, pandas and c-lasso within your virtual / conda environment. (Note: Depending on the operating system one has to use commas or not)
+
+
+```bash
+pip install numpy, scipy, matplotlib, pandas, c-lasso
+```
+
+Also consider pip3 if it does not work. Before loading trac specify the the python path with
+
+
+```r
+use_python(path)
+```
+
+# Install trac
+
+
+```r
+# if devtools is not installed
+# install.packages("devtools")
+devtools::install_github("jacobbien/trac")
+```
+
+# References

@@ -10,7 +10,7 @@ vignette: >
 <!--
 To knit this vignette, I ran the following within an R console:
 
-knitr::knit("trac-example.Rmd.orig", output = "trac-example.Rmd")
+knitr::knit("trac-installation.Rmd.orig", output = "trac-installation.Rmd")
 
 -->
 

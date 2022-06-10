@@ -4,8 +4,8 @@
 #' It performs \code{nfold}-fold cross validation.
 #'
 #' @param fit output of \code{\link{sparse_log_contrast}} function.
-#' @param Z,y same arguments as passed to \code{\link{sparse_log_contrast}}. C
-#' that is used will be taken from fit object.
+#' @param Z,y,additional_covariates same arguments as passed to
+#'   \code{\link{sparse_log_contrast}}. C will be taken from fit object.
 #' @param folds a partition of \code{1:nrow(Z)}.
 #' @param nfolds number of folds for cross-validation
 #' @param summary_function how to combine the errors calculated on each

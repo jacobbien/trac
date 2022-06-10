@@ -12,7 +12,9 @@ predict_trac <- function(fit, new_Z, new_additional_covariates = NULL,
                          output = c("raw", "probability", "class")) {
   # fit: output of wag
   # new_Z: n_new by p matrix
-  #
+  # new_additional_covariates: n_new by p' matrix
+
+
 
   # add to make make code backwards compatible, regression
   # and with intercept as default
@@ -25,22 +27,27 @@ predict_trac <- function(fit, new_Z, new_additional_covariates = NULL,
   classification <- fit[[1]]$method %in% c("classif",
                                            "classif_huber")
   intercept <- fit[[1]]$intercept
+
+  # Transform additional covariates
+
+  if (!is.null(new_additional_covariates)) {
+    categorical_list <-
+      get_categorical_variables(new_additional_covariates)
+    categorical <- categorical_list[["categorical"]]
+    n_categorical <- categorical_list[["n_categorical"]]
+    if (n_categorical > 0) {
+      new_additional_covariates[, categorical] <-
+        transform_categorical_variables(new_additional_covariates,
+                                        categorical)
+    }
+    new_Z <- cbind(as.matrix(new_Z), new_additional_covariates)
+    new_Z <- as.matrix(new_Z)
+  }
+
   # save output as list
   yhat <- list()
   for (iw in seq_along(fit)) {
-    if (!is.null(new_additional_covariates)) {
-      categorical_list <-
-        get_categorical_variables(new_additional_covariates)
-      categorical <- categorical_list[["categorical"]]
-      n_categorical <- categorical_list[["n_categorical"]]
-      if (n_categorical > 0) {
-        new_additional_covariates[, categorical] <-
-          transform_categorical_variables(new_additional_covariates,
-                                          categorical)
-      }
-      new_Z <- cbind(new_Z, new_additional_covariates)
-      new_Z <- as.matrix(new_Z)
-    }
+
     if (intercept) {
       yhat[[iw]] <- t(as.numeric(fit[[iw]]$beta0) +
         t(as.matrix(new_Z %*% fit[[iw]]$beta)))

@@ -7,10 +7,16 @@
 sparse_log_contrast(
   Z,
   y,
+  additional_covariates = NULL,
   C = NULL,
   fraclist = NULL,
   nlam = 20,
-  min_frac = 1e-04
+  min_frac = 1e-04,
+  method = c("regr", "classif", "classif_huber"),
+  w_additional_covariates = NULL,
+  intercept = TRUE,
+  normalized = TRUE,
+  rho = 0
 )
 }
 \arguments{
@@ -18,22 +24,49 @@ sparse_log_contrast(
 
 \item{y}{n vector (response)}
 
+\item{additional_covariates}{n by p' matrix containing additional covariates
+/ features}
+
 \item{C}{m by p matrix. Default is a row vector of ones.}
 
-\item{fraclist}{(optional) vector of tuning parameter multipliers.  Should be in (0, 1].}
+\item{fraclist}{(optional) vector of tuning parameter multipliers.
+Should be in (0, 1].}
 
 \item{nlam}{number of tuning parameters (ignored if fraclist non-NULL)}
 
 \item{min_frac}{smallest value of tuning parameter multiplier (ignored if
 fraclist non-NULL)}
+
+\item{method}{string which estimation method to use should be in
+("regr", "classif", "classif_huber")}
+
+\item{w_additional_covariates}{vector of positive weights of
+length ncol(additional_covariates) (default: all equal to 1).}
+
+\item{intercept}{only works for classification! Should the intercept be
+fitted. Default is TRUE, set to FALSE if the intercept should not be
+included}
+
+\item{normalized}{if \code{TRUE} normalize the additional covariates.
+In this case the calculation for each covariate / feature:
+(X-X_mean) / ||X||_2
+The weights will be transformed back to the original scale.}
+
+\item{rho}{value for huberized classification loss.
+Default = 0.0.}
 }
 \description{
 Solves the constrained lasso problem using the CLASSO module
-in Python.  The optimization problem is
+in Python.  The optimization problem are
 }
 \details{
+Regression:
 minimize_{beta, beta0} 1/(2n) || y - beta0 1_n - Zagg_clr beta ||^2
-+ lamda_max * frac || beta ||_1
++ lamda_max * frac || beta ||\emph{1
+subject to C beta = 0
+Classification:
+minimize}{beta, beta0} max(1 - y_i(beta0 + Z_clr_i * beta), 0)^2 +
+lambda_max * frac || W * beta ||_1
 subject to C beta = 0
 
 Default is C = 1_p^T, but C can be a general matrix.
