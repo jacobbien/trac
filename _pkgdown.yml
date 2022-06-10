@@ -14,17 +14,24 @@ reference:
   - cv_trac
   - predict_trac
 - title: "Plotting functions"
+  desc: >
+    Functions for vizualization of the fitting process
+- contents:
+  - plot_trac_path
+  - plot_cv_trac
 - title: "Sparse log contrast functions"
 - contents:
   - sparse_log_contrast
   - cv_sparse_log_contrast
+  - predict_sparse_log_contrast
 - contents:
   - plot_trac_path
   - plot_cv_trac
-- title: "An example data set"
-  desc: "A gut microbiome data set used in vignette"
+- title: "Example data sets"
+  desc: "Gut microbiome data sets used in vignette"
 - contents:
   - sCD14
+  - malawi
 - title: "Refitting functions"
   desc: >
     Functions for fitting unregularized versions subject to the sparsity
@@ -32,3 +39,16 @@ reference:
 - contents:
   - refit_trac
   - refit_sparse_log_contrast
+  - refit_sparse_log_contrast_classif
+- title: "Extention: Two-stage procedure"
+  desc: >
+    Functions for fitting a second stage
+- contents:
+  - second_stage
+  - predict_second_stage
+- title: "Helper functions"
+  desc: >
+    Helper functions
+- contents:
+  - make_folds_stratified
+

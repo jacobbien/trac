@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,37 +33,37 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">trac</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="articles/trac-classification-pipeline.html">trac classification pipeline</a>
+    </li>
+    <li>
       <a href="articles/trac-example.html">Using `trac` to build tree-aggregated predictive models</a>
+    </li>
+    <li>
+      <a href="articles/trac-installation.html">Installation</a>
     </li>
   </ul>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/jacobbien/trac/">
+  <a href="https://github.com/jacobbien/trac/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -78,34 +80,43 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="trac-tree-based-aggregation-of-compositional-data" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#trac-tree-based-aggregation-of-compositional-data" class="anchor"></a>trac: Tree-based Aggregation of Compositional Data</h1></div>
-<p>This R package, called <code>trac</code>, performs tree-based aggregation of compositional data with a particular focus on microbiome data. Users are encouraged to visit the <a href="https://jacobbien.github.io/trac/">package’s website</a> and a <a href="https://jacobbien.github.io/trac/articles/trac-example.html">vignette</a>. It implements the method proposed in <a href="https://www.biorxiv.org/content/10.1101/2020.09.01.277632v1">Tree-Aggregated Predictive Modeling of Microbiome Data</a>. It uses internally the <a href="https://github.com/Leo-Simpson/c-lasso">c-lasso</a> solver in Python (described in <a href="https://joss.theoj.org/papers/10.21105/joss.02844">this paper</a>).</p>
-<p>The easiest way to install <code>trac</code> is by using the <a href="https://cran.r-project.org/web/packages/devtools/index.html">devtools</a> R package (if not already installed, open R and run <code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("devtools")</a></code>).</p>
+<div class="section level1">
+<div class="page-header"><h1 id="trac-tree-based-aggregation-of-compositional-data">trac: Tree-based Aggregation of Compositional Data<a class="anchor" aria-label="anchor" href="#trac-tree-based-aggregation-of-compositional-data"></a>
+</h1></div>
+<p>This R package, called <code>trac</code>, performs tree-based aggregation of compositional data with a particular focus on microbiome data. Users are encouraged to visit the <a href="https://jacobbien.github.io/trac/" class="external-link">package’s website</a> and a <a href="https://jacobbien.github.io/trac/articles/trac-example.html" class="external-link">vignette</a>. It implements the method proposed in <a href="https://www.biorxiv.org/content/10.1101/2020.09.01.277632v1" class="external-link">Tree-Aggregated Predictive Modeling of Microbiome Data</a>. It uses internally the <a href="https://github.com/Leo-Simpson/c-lasso" class="external-link">c-lasso</a> solver in Python (described in <a href="https://joss.theoj.org/papers/10.21105/joss.02844" class="external-link">this paper</a>). The package also includes a fast solver for standard sparse log-contrast regression.</p>
+<p>The easiest way to install <code>trac</code> is by using the <a href="https://cran.r-project.org/web/packages/devtools/index.html" class="external-link">devtools</a> R package (if not already installed, open R and run <code>install.packages("devtools")</code>).</p>
 <p>To install <code>trac</code>, run</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"jacobbien/trac"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"jacobbien/trac"</span><span class="op">)</span></code></pre></div>
 <p>in R.</p>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
-<h2>Links</h2>
+<h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Browse source code at <br><a href="https://github.com/jacobbien/trac/">https://​github.com/​jacobbien/​trac/​</a>
-</li>
+<li><a href="https://github.com/jacobbien/trac/" class="external-link">Browse source code</a></li>
 </ul>
 </div>
+
 <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li><a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a></li>
+<li><a href="https://www.r-project.org/Licenses/GPL-3" class="external-link">GPL-3</a></li>
 </ul>
 </div>
+
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing trac</a></li>
+</ul>
+</div>
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Jacob Bien <br><small class="roles"> Author, maintainer </small>  </li>
 <li>Christian Mueller <br><small class="roles"> Author </small>  </li>
@@ -113,16 +124,20 @@
 </ul>
 </div>
 
+
+
   </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Jacob Bien, Christian Mueller, Xiaohan Yan.</p>
+  <p></p>
+<p>Developed by Jacob Bien, Christian Mueller, Xiaohan Yan.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer>
@@ -130,6 +145,8 @@
 
   
 
+
+  
 
   </body>
 </html>

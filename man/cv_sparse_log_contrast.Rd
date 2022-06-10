@@ -10,14 +10,15 @@ cv_sparse_log_contrast(
   y,
   folds = NULL,
   nfolds = 5,
-  summary_function = stats::median
+  summary_function = stats::median,
+  additional_covariates = NULL
 )
 }
 \arguments{
 \item{fit}{output of \code{\link{sparse_log_contrast}} function.}
 
-\item{Z, y}{same arguments as passed to \code{\link{sparse_log_contrast}}. C
-that is used will be taken from fit object.}
+\item{Z, y, additional_covariates}{same arguments as passed to
+\code{\link{sparse_log_contrast}}. C will be taken from fit object.}
 
 \item{folds}{a partition of \code{1:nrow(Z)}.}
 

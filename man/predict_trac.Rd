@@ -4,12 +4,23 @@
 \alias{predict_trac}
 \title{Make predictions based on a trac fit}
 \usage{
-predict_trac(fit, new_Z)
+predict_trac(
+  fit,
+  new_Z,
+  new_additional_covariates = NULL,
+  output = c("raw", "probability", "class")
+)
 }
 \arguments{
 \item{fit}{output of the function \code{\link{trac}}}
 
 \item{new_Z}{a new data matrix (see \code{Z} from \code{\link{trac}})}
+
+\item{new_additional_covariates}{a new data matrix
+(see \code{additional_covariates} from \code{\link{trac}})}
+
+\item{output}{string  either "raw", "probability" or "class" only relevant
+classification tasks}
 }
 \value{
 a vector of \code{nrow(new_Z)} predictions.

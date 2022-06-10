@@ -14,3 +14,15 @@ txt <- read_file("trac-example.Rmd") %>%
   str_replace_all("\\(figure/", "(")
 write_file(txt, file = "trac-example.Rmd")
 rmarkdown::render("trac-example.Rmd")
+
+
+knit("trac-installation.Rmd.orig", output = "trac-installation.Rmd")
+rmarkdown::render("trac-installation.Rmd")
+
+knit("trac-classification-pipeline.Rmd.orig",
+     output = "trac-classification-pipeline.Rmd")
+system("mv figure/* .; rmdir figure")
+txt <- read_file("trac-classification-pipeline.Rmd") %>%
+  str_replace_all("\\(figure/", "(")
+write_file(txt, file = "trac-classification-pipeline.Rmd")
+rmarkdown::render("trac-classification-pipeline.Rmd")

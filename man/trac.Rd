@@ -4,7 +4,22 @@
 \alias{trac}
 \title{Perform tree-based aggregation}
 \usage{
-trac(Z, y, A, fraclist = NULL, nlam = 20, min_frac = 1e-04, w = NULL)
+trac(
+  Z,
+  y,
+  A,
+  additional_covariates = NULL,
+  fraclist = NULL,
+  nlam = 20,
+  min_frac = 1e-04,
+  w = NULL,
+  w_additional_covariates = NULL,
+  method = c("regr", "classif", "classif_huber"),
+  intercept = TRUE,
+  normalized = TRUE,
+  rho = 0,
+  output = c("raw", "probability")
+)
 }
 \arguments{
 \item{Z}{n by p matrix containing log(X)}
@@ -13,6 +28,9 @@ trac(Z, y, A, fraclist = NULL, nlam = 20, min_frac = 1e-04, w = NULL)
 
 \item{A}{p by (t_size-1) binary matrix giving tree structure (t_size is the
 total number of nodes and the -1 is because we do not include the root)}
+
+\item{additional_covariates}{n by p' matrix containing additional covariates
+/ features}
 
 \item{fraclist}{(optional) vector of tuning parameter multipliers.  Or a list
 of length num_w of such vectors. Should be in (0, 1].}
@@ -24,6 +42,28 @@ fraclist non-NULL)}
 
 \item{w}{vector of positive weights of length t_size - 1 (default: all equal
 to 1). Or a list of num_w such vectors.}
+
+\item{w_additional_covariates}{vector of positive weights of
+length ncol(additional_covariates) (default: all equal to 1).}
+
+\item{method}{string which estimation method to use should be in
+("regr", "classif", "classif_huber")}
+
+\item{intercept}{only works for classification! Should the intercept be
+fitted. Default is TRUE, set to FALSE if the intercept should not be
+included}
+
+\item{normalized}{if \code{TRUE} normalize the additional covariates.
+In this case the calculation for each covariate / feature:
+(X-X_mean) / ||X||_2
+The weights will be transformed back to the original scale.}
+
+\item{rho}{value for huberized classification loss.
+Default = -0.0.}
+
+\item{output}{only relevant for classification. String indicating whether
+the raw score output or probability for class 1 should be used.
+The probability is estimated with Platt’s probibalistic output}
 }
 \value{
 a list of length num_w, where each list element corresponds to the
@@ -37,13 +77,23 @@ that node's subtree.
 }
 \description{
 Solves the weighted aggregation problem using the CLASSO module
-in Python.  The optimization problem is
+in Python.  The optimization problems are:
 }
 \details{
+Regression:
 minimize_{beta, beta0, gamma} 1/(2n) || y - beta0 1_n - Z_clr beta ||^2
 + lamda_max * frac || W * gamma ||_1
 subject to beta = A gamma, 1_p^T beta = 0
 where W = diag(w) with w_u > 0 for all u
+
+Classification:
+minimize_{beta, beta0, gamma} max(1 - y_i(beta0 + Z_clr_i * beta), 0)^2 +
+lambda_max * frac || W * gamma ||_1
+subject to beta = A gamma, 1_p^T beta = 0
+where W = diag(w) with w_u > 0 for all u
+
+Classification Huberized:
+see C2 formulation in c-lasso
 
 Observe that the tuning parameter is specified through "frac", the fraction
 of lamda_max (which is the smallest value for which gamma is nonzero).

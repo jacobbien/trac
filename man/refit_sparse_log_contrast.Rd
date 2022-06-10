@@ -7,7 +7,7 @@
 refit_sparse_log_contrast(fit, Z, y, tol = 1e-05)
 }
 \arguments{
-\item{fit}{output of trac}
+\item{fit}{output of sparse_log_contrast}
 
 \item{Z, y}{same arguments as passed to \code{\link{sparse_log_contrast}}}
 

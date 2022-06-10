@@ -9,24 +9,31 @@ cv_trac(
   Z,
   y,
   A,
+  additional_covariates = NULL,
   folds = NULL,
   nfolds = 5,
-  summary_function = stats::median
+  summary_function = stats::median,
+  stratified = FALSE
 )
 }
 \arguments{
 \item{fit}{output of \code{\link{trac}} function.}
 
-\item{Z, y, A}{same arguments as passed to \code{\link{trac}}}
+\item{Z, y, A, additional_covariates}{same arguments as passed to
+\code{\link{trac}}}
 
 \item{folds}{a partition of \code{1:nrow(Z)}.}
 
 \item{nfolds}{number of folds for cross-validation}
 
 \item{summary_function}{how to combine the errors calculated on each
-observation within a fold (e.g. mean or median)}
+observation within a fold (e.g. mean or median) (only for regression task)}
+
+\item{stratified}{if \code{TRUE} use stratified folds based on target variable
+only for classification. Default set to FALSE.}
 }
 \description{
 This function is to be called after calling \code{\link{trac}}.  It performs
-\code{nfold}-fold cross validation.
+\code{nfold}-fold cross validation. For classification the metric is
+misclassification error.
 }
